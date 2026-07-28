@@ -603,6 +603,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
             <button class="btn dan" id="btnReset">Tüm Verileri Sıfırla</button>
           </div>
           <p class="hint" style="margin-top:12px">Tüm veriler yalnızca bu tarayıcının localStorage'ında saklanır.</p>
+          <p class="hint" style="margin-top:6px">Sürüm: <b id="appVer">—</b></p>
         </div>
       </aside>
     </div>
@@ -1050,6 +1051,7 @@ var H0=6,H1=24,HH=46;
 /* =========================================================================
    3) STATE
    ========================================================================= */
+var APP_VERSION="2026-07-28.6";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
@@ -1067,10 +1069,15 @@ function load(){
             cats:o.cats||[],updatedAt:o.updatedAt||0};
   }catch(e){ return defaults(); }
 }
-function save(){
-  S.updatedAt=Date.now();
+function persist(){
   try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){ toast("Kaydedilemedi"); }
-  if(typeof scheduleSync==="function") scheduleSync();
+}
+/* save()  → gerçek kullanıcı değişikliği: zaman damgasını günceller, senkronu tetikler
+   save(false) → bakım/açılış işleri: sadece diske yazar, "değişiklik" sayılmaz */
+function save(touch){
+  if(touch!==false) S.updatedAt=Date.now();
+  persist();
+  if(touch!==false&&typeof scheduleSync==="function") scheduleSync();
 }
 var $=function(s,r){ return (r||document).querySelector(s); };
 var $$=function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
@@ -1761,7 +1768,7 @@ function pullNow(force){
     });
   });
 }
-var syncBusy=false,syncTimer=null;
+var syncBusy=false,syncTimer=null,syncBooted=false;
 function syncNow(silent){
   if(!syncReady()||syncBusy) return Promise.resolve();
   syncBusy=true; setSync("sync");
@@ -1781,10 +1788,13 @@ function syncNow(silent){
   }).catch(function(e){
     SY.lastErr=e.message||String(e); saveSync(); setSync("err",SY.lastErr);
     if(!silent) toast("Senkron hatası: "+SY.lastErr);
-  }).then(function(){ syncBusy=false; });
+  }).then(function(){ syncBusy=false; syncBooted=true; });
 }
 function scheduleSync(){
   if(!syncReady()) return;
+  /* açılıştaki ilk çekme bitmeden gönderme yapma — yoksa diğer cihazın
+     yeni verisi, bu cihazın eski verisiyle ezilir */
+  if(!syncBooted) return;
   clearTimeout(syncTimer);
   syncTimer=setTimeout(function(){ syncNow(true); },8000);   // yazma kotasını yormamak için
 }
@@ -2063,6 +2073,7 @@ function fillProfile(){
   $("#p_weight").value=p.weight; $("#p_bf").value=p.bf||""; $("#p_act").value=p.act;
   $$("#goalChips .chip").forEach(function(b){ b.classList.toggle("on",b.dataset.g===p.goal); });
   renderCalc(); renderSyncCard();
+  var av=$("#appVer"); if(av) av.textContent=APP_VERSION;
 }
 function renderCalc(){
   var t=calc(),bmi=t.bmi?t.bmi.toFixed(1):"-";
@@ -2080,7 +2091,7 @@ function renderCalc(){
 function buildExport(){
   var t=calc();
   return {
-    meta:{app:"Yasam Asistani",version:2,exportedAt:new Date().toISOString(),recipeCount:ALL_RECIPES.length},
+    meta:{app:"Yasam Asistani",version:2,build:APP_VERSION,exportedAt:new Date().toISOString(),recipeCount:ALL_RECIPES.length},
     profile:S.profile,
     targets:{bmr:t.bmr,tdee:t.tdee,calories:t.kcal,protein_g:t.prot,carbs_g:t.carb,fat_g:t.fat,
              water_l:+t.su.toFixed(1),method:t.method,goal:t.goal},
@@ -2654,17 +2665,23 @@ document.addEventListener("visibilitychange",function(){
 });
 window.addEventListener("online",function(){ if(syncReady()) syncNow(true); });
 
-/* İlk açılış */
+/* İlk açılış
+   Açılıştaki bakım işleri (to-do temizliği, ilk hafta planı, hazır programlar)
+   "kullanıcı değişikliği" sayılmaz; damga açılış anındaki değerine geri alınır.
+   Aksi hâlde uygulamayı en son açan cihaz, diğerinin yeni verisini ezerdi. */
+var BOOT_STAMP=S.updatedAt||0;
 purgeTodos();
 fillSyncForm();
 setSync(syncReady()?"ok":"off");
-if(syncReady()) setTimeout(function(){ syncNow(true); },600);
-if(!S.templates){ S.templates=JSON.parse(JSON.stringify(DEFAULT_TPL)); save(); }
+if(!S.templates) S.templates=JSON.parse(JSON.stringify(DEFAULT_TPL));
 applyTheme();
 if(!S.plan) genWeek();
 fillProfile();
 renderCal();
-save();
+S.updatedAt=BOOT_STAMP;
+persist();
+if(syncReady()) setTimeout(function(){ syncNow(true); },400);
+else syncBooted=true;
 </script>
 </body>
 </html>
