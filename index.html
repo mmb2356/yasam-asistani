@@ -673,31 +673,17 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 
 <!-- ================= ANTRENMAN MODALI ================= -->
 <div class="ov" id="ovWk">
-  <div class="modal" style="width:min(600px,100%)">
+  <div class="modal" style="width:min(440px,100%)">
     <h3 id="wkTitle">Antrenman</h3>
-    <div class="row">
-      <label class="fld"><span>Başlık</span><input id="w_title" placeholder="örn: Chest Day / Kardiyo" /></label>
-      <label class="fld"><span>Tür</span><select id="w_type"></select></label>
-    </div>
+    <label class="fld"><span>Başlık</span>
+      <input id="w_title" placeholder="örn: Chest Day / Kardiyo / Uzun sürüş" /></label>
     <div class="row">
       <label class="fld"><span>Gün</span><select id="w_day"></select></label>
-      <label class="fld"><span>Program uygula</span><select id="w_tpl"></select></label>
+      <label class="fld"><span>Program</span><select id="w_tpl"></select></label>
     </div>
-    <div id="w_calInfo" class="hint" style="margin-top:-4px"></div>
-
-    <div class="mtitle" style="margin-top:8px">Hareketler</div>
-    <div id="w_items"></div>
-    <button class="btn gh sm" id="btnExAdd" style="width:100%;margin-top:8px">+ Hareket Ekle</button>
-
-    <label class="fld" style="margin-top:14px"><span>Not</span>
-      <textarea id="w_note" rows="2" placeholder="ısınma, tempo, hissiyat…"></textarea></label>
-    <label class="chip" style="display:inline-flex;gap:8px;align-items:center;cursor:pointer">
-      <input type="checkbox" id="w_done" style="width:16px;height:16px;accent-color:var(--acc2)" /> Tamamlandı
-    </label>
-
-    <div class="mfoot" style="flex-wrap:wrap">
+    <div id="w_calInfo" class="hint"></div>
+    <div class="mfoot">
       <button class="btn dan sm" id="wkDel" style="flex:0 0 auto">Sil</button>
-      <button class="btn gh" id="wkSaveTpl">☆ Programa Kaydet</button>
       <button class="btn gh" id="wkCancel">Kapat</button>
       <button class="btn pri" id="wkSave">Kaydet</button>
     </div>
@@ -1051,7 +1037,7 @@ var H0=6,H1=24,HH=46;
 /* =========================================================================
    3) STATE
    ========================================================================= */
-var APP_VERSION="2026-07-28.6";
+var APP_VERSION="2026-07-28.7";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
@@ -1308,23 +1294,23 @@ function renderEks(){
   var list=sortedWorkouts(),done=list.filter(function(w){return w.done;}).length;
   var planMin=0;
   S.events.forEach(function(e){ if(e.type==="sport") planMin+=Math.max(0,t2m(e.end)-t2m(e.start)); });
-  var vol=list.reduce(function(t,w){ return t+wkVolume(w); },0);
-  var exN=list.reduce(function(t,w){ return t+(w.items?w.items.length:0); },0);
+  var pct=list.length?Math.round(done/list.length*100):0;
   $("#eksKpi").innerHTML=
     kpi("Antrenman",list.length,"adet")+
     kpi("Tamamlanan",done+"/"+list.length,"")+
     kpi("Planlanan süre",(planMin/60).toFixed(1),"sa")+
-    kpi("Hareket",exN,"adet")+
-    kpi("Toplam hacim",vol>=1000?(vol/1000).toFixed(1)+"k":vol,"kg");
-  $("#eksSub").textContent=list.length?(list.length+" kart · takvimdeki sporlar otomatik gelir"):"";
+    kpi("Tamamlanma","%"+pct,"");
+  $("#eksSub").textContent=!list.length?""
+    :(done===list.length?"Bu haftayı tamamladın 💪"
+     :(list.length-done)+" antrenman bekliyor");
 
   $("#wkList").innerHTML=list.length?list.map(function(w){
     var e=evOf(w),v=wkVolume(w);
     var when=e?(DAYS[e.day]+" · "+e.start+"–"+e.end)
               :(w.day!=null?DAYS[w.day]+" · takvimde değil":"takvimde değil");
     var sum=(w.items&&w.items.length)
-      ? w.items.slice(0,4).map(function(x){ return esc(x.n); }).join(" · ")+(w.items.length>4?" +"+(w.items.length-4)+" hareket":"")
-      : "hareket eklenmedi";
+      ? w.items.slice(0,4).map(function(x){ return esc(x.n); }).join(" · ")+(w.items.length>4?" +"+(w.items.length-4):"")
+      : "";
     return '<div class="wk'+(w.done?" done":"")+'" data-wk="'+w.id+'">'+
       '<div class="wkh">'+
         '<span class="tag '+(w.type==="agirlik"?"kirmizi":w.type==="bisiklet"||w.type==="kosu"?"balik":"diger")+'">'+
@@ -1333,7 +1319,7 @@ function renderEks(){
         '<span class="wkwhen">'+esc(when)+'</span>'+
         '<button class="ico tick'+(w.done?" on":"")+'" data-wkdone="'+w.id+'" title="Tamamlandı">✓</button>'+
       '</div>'+
-      '<div class="wksum">'+sum+(v?' <span style="color:var(--tx3)">· '+v.toLocaleString("tr")+' kg hacim</span>':'')+'</div>'+
+      (sum?'<div class="wksum">'+sum+'</div>':'')+
     '</div>';
   }).join(""):
     '<div class="empty">Henüz antrenman yok.<br><span style="font-size:13px">Takvimde bir güne spor eklediğinde '+
@@ -1358,12 +1344,11 @@ function renderEks(){
   var keys=Object.keys(byType);
   $("#wkStats").innerHTML=keys.length?keys.map(function(k){
     var d=byType[k];
-    return row((SPORTS[k]||{l:"Diğer"}).l,d.n+" · "+(d.min?(d.min/60).toFixed(1)+" sa":"—")+
-      (d.vol?" · "+(d.vol>=1000?(d.vol/1000).toFixed(1)+"k":d.vol)+" kg":""));
+    return row((SPORTS[k]||{l:"Diğer"}).l,d.n+(d.min?" · "+(d.min/60).toFixed(1)+" sa":""));
   }).join(""):'<div class="empty" style="padding:14px">Veri yok.</div>';
 }
 
-/* ---------- Antrenman düzenleyici ---------- */
+/* ---------- Antrenman düzenleyici (sade) ---------- */
 var wkEdit=null;
 function openWk(id){
   var w=S.workouts.filter(function(x){return x.id===id;})[0];
@@ -1373,58 +1358,25 @@ function openWk(id){
   }
   wkEdit=w.id;
   var e=evOf(w);
-  $("#wkTitle").textContent=e?"Antrenman · takvimden":"Antrenman";
+  $("#wkTitle").textContent=e?("Antrenman · "+DAYS[e.day]):"Antrenman";
   $("#w_title").value=w.title||"";
-  $("#w_type").innerHTML=Object.keys(SPORTS).map(function(k){
-    return '<option value="'+k+'">'+SPORTS[k].l+'</option>'; }).join("")+'<option value="diger">Diğer</option>';
-  $("#w_type").value=SPORTS[w.type]?w.type:"diger";
-  $("#w_type").disabled=!!e;
   $("#w_day").innerHTML='<option value="">— takvimsiz —</option>'+
     DAYS.map(function(d,i){ return '<option value="'+i+'">'+d+'</option>'; }).join("");
   $("#w_day").value=(w.day==null?"":String(w.day));
   $("#w_day").disabled=!!e;
-  $("#w_calInfo").textContent=e
-    ? "Bu antrenman takvimdeki "+DAYS[e.day]+" "+e.start+"–"+e.end+" kaydına bağlı. Gün/saat takvimden değişir."
-    : "Takvimde karşılığı yok. İstersen sadece burada dursun.";
-  $("#w_tpl").innerHTML='<option value="">— seç —</option>'+
+  $("#w_tpl").innerHTML='<option value="">— yok —</option>'+
     S.templates.map(function(t){ return '<option value="'+t.id+'">'+esc(t.title)+'</option>'; }).join("");
   $("#w_tpl").value="";
-  $("#w_note").value=w.note||"";
-  $("#w_done").checked=!!w.done;
-  drawItems(w.items||[]);
+  $("#w_calInfo").textContent=e
+    ? "Gün ve saat takvimden geliyor."
+    : "Takvimde karşılığı yok, sadece burada duruyor.";
   $("#ovWk").classList.add("on");
-}
-function drawItems(items){
-  $("#w_items").innerHTML=items.length?items.map(function(x,i){
-    return '<div class="exrow" data-i="'+i+'">'+
-      '<input data-f="n" value="'+esc(x.n||"")+'" placeholder="hareket" />'+
-      '<input data-f="s" type="number" min="0" value="'+(x.s||"")+'" placeholder="set" />'+
-      '<input data-f="r" type="number" min="0" value="'+(x.r||"")+'" placeholder="tekrar" />'+
-      '<input data-f="kg" type="number" min="0" step="0.5" value="'+(x.kg||"")+'" placeholder="kg" />'+
-      '<input data-f="note" value="'+esc(x.note||"")+'" placeholder="not" />'+
-      '<button class="ico" data-exdel="'+i+'">✕</button></div>';
-  }).join(""):'<div class="hint" style="margin:0">Hareket yok — aşağıdan ekle ya da bir program uygula.</div>';
-}
-function readItems(){
-  return $$("#w_items .exrow").map(function(rw){
-    var o={};
-    $$("[data-f]",rw).forEach(function(el){
-      var f=el.dataset.f;
-      o[f]=(f==="n"||f==="note")?el.value.trim():(el.value===""?0:+el.value);
-    });
-    return o;
-  }).filter(function(o){ return o.n; });
+  setTimeout(function(){ var el=$("#w_title"); if(el&&!el.value) el.focus(); },60);
 }
 function saveWk(close){
   var w=S.workouts.filter(function(x){return x.id===wkEdit;})[0]; if(!w) return;
   w.title=$("#w_title").value.trim()||(SPORTS[w.type]||{l:"Antrenman"}).l;
-  if(!evOf(w)){
-    w.type=$("#w_type").value;
-    w.day=$("#w_day").value===""?null:+$("#w_day").value;
-  }
-  w.items=readItems();
-  w.note=$("#w_note").value.trim();
-  w.done=$("#w_done").checked;
+  if(!evOf(w)) w.day=($("#w_day").value===""?null:+$("#w_day").value);
   save(); renderEks();
   if(close!==false) $("#ovWk").classList.remove("on");
 }
@@ -2384,24 +2336,14 @@ $("#btnTplNew").addEventListener("click",function(){
 });
 
 /* Antrenman modalı */
-$("#btnExAdd").addEventListener("click",function(){
-  var items=readItems(); items.push({n:"",s:3,r:10,kg:0,note:""});
-  drawItems(items);
-  var rows=$$("#w_items .exrow"); if(rows.length) $("input",rows[rows.length-1]).focus();
-});
-$("#w_items").addEventListener("click",function(e){
-  var d=e.target.closest("[data-exdel]"); if(!d) return;
-  var items=readItems(); items.splice(+d.dataset.exdel,1); drawItems(items);
-});
 $("#w_tpl").addEventListener("change",function(){
-  var tp=S.templates.filter(function(t){ return t.id===this.value; }.bind(this))[0];
-  if(!tp) return;
-  var cur=readItems();
-  var add=JSON.parse(JSON.stringify(tp.items));
-  drawItems(cur.length&&confirm("Mevcut hareketlerin üzerine eklensin mi? (İptal = değiştir)")?cur.concat(add):add);
+  var id=this.value; this.value="";
+  var tp=S.templates.filter(function(t){ return t.id===id; })[0]; if(!tp) return;
+  var w=S.workouts.filter(function(x){ return x.id===wkEdit; })[0]; if(!w) return;
+  w.items=JSON.parse(JSON.stringify(tp.items||[]));
+  if(!evOf(w)&&tp.type) w.type=tp.type;
   if(!$("#w_title").value.trim()) $("#w_title").value=tp.title;
-  this.value="";
-  toast(tp.title+" uygulandı");
+  toast(tp.title+" seçildi");
 });
 $("#wkSave").addEventListener("click",function(){ saveWk(true); toast("Kaydedildi ✓"); });
 $("#wkCancel").addEventListener("click",function(){ saveWk(true); });
@@ -2409,19 +2351,10 @@ $("#ovWk").addEventListener("click",function(e){ if(e.target===this) saveWk(true
 $("#wkDel").addEventListener("click",function(){
   var w=S.workouts.filter(function(x){return x.id===wkEdit;})[0]; if(!w) return;
   var e=evOf(w);
-  if(e && !confirm("Bu antrenman takvimdeki kayda bağlı. Detaylar silinsin mi? (Takvim kaydı kalır)")) return;
-  if(e){ w.items=[]; w.note=""; w.done=false; w.title=(SPORTS[w.type]||{l:"Antrenman"}).l; }
+  if(e && !confirm("Bu antrenman takvimdeki kayda bağlı. Detayı sıfırlansın mı? (Takvim kaydı kalır)")) return;
+  if(e){ w.items=[]; w.done=false; w.title=(SPORTS[w.type]||{l:"Antrenman"}).l; }
   else  { S.workouts=S.workouts.filter(function(x){ return x.id!==wkEdit; }); }
   save(); renderEks(); $("#ovWk").classList.remove("on"); toast("Silindi");
-});
-$("#wkSaveTpl").addEventListener("click",function(){
-  saveWk(false);
-  var w=S.workouts.filter(function(x){return x.id===wkEdit;})[0]; if(!w) return;
-  if(!w.items.length) return toast("Önce hareket ekle");
-  var name=prompt("Program adı:",w.title||"Program"); if(!name) return;
-  S.templates.push({id:uid(),title:name.trim(),type:w.type,
-    items:JSON.parse(JSON.stringify(w.items)).map(function(x){ delete x.done; return x; })});
-  save(); renderEks(); toast("Program kaydedildi ☆");
 });
 
 /* Aktivite modalı */
