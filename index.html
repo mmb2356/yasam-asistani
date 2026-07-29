@@ -273,6 +273,37 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:5px}
 #btnTheme{width:40px;padding:9px 0;text-align:center;font-size:16px;line-height:1}
 
+/* ---------- Bütçe ---------- */
+.monthbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.monthbar b{font-size:18px;min-width:150px;text-align:center}
+.quickbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.quickbar input#qAmount{max-width:110px}
+.quickbar input#qName{max-width:180px}
+.quickbar select{max-width:170px}
+.chartwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.donut{width:180px;height:180px;flex:none}
+.donut .seg{transition:stroke-dasharray .5s ease}
+.donut text.dnum{fill:var(--tx);font-size:15px;font-weight:800}
+.donut text.dlbl{fill:var(--tx3);font-size:8px;letter-spacing:.4px;text-transform:uppercase}
+.legendlist{flex:1;min-width:200px;display:grid;gap:7px;max-height:230px;overflow:auto}
+.lrow{display:flex;align-items:center;gap:9px;font-size:13.5px}
+.lrow i{width:11px;height:11px;border-radius:4px;flex:none}
+.lrow .ln{flex:1}
+.lrow .lv{font-variant-numeric:tabular-nums;font-weight:600}
+.lrow .lp{color:var(--tx3);font-size:12px;width:42px;text-align:right}
+.btcrow{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:11px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.btcrow:hover{border-color:var(--acc)}
+.btcrow .dot{width:10px;height:10px;border-radius:4px;flex:none}
+.btcrow .nm{flex:1;font-size:14px;font-weight:600}
+.btcrow .sub{font-size:11.5px;color:var(--tx3);font-weight:500;display:block;margin-top:1px}
+.btcrow .amt{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.btcrow.in .amt{color:var(--acc2)}
+.groupttl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);
+  font-weight:800;margin:14px 0 8px}
+.net{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.net.pos{color:var(--acc2)} .net.neg{color:var(--dan)}
+
 /* ---------- Yapılacaklar ---------- */
 .sugbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px;min-height:34px}
 .sugbar .lbl{font-size:12px;color:var(--tx3);font-weight:600}
@@ -404,6 +435,7 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
       <button data-v="food">Beslenme</button>
       <button data-v="shop">Alışveriş</button>
       <button data-v="todo">Yapılacaklar</button>
+      <button data-v="btc">Bütçe</button>
       <button data-v="prof">Profil</button>
     </nav>
     <button class="btn gh" id="btnSync" title="Bulut senkron kapalı">☁</button>
@@ -539,6 +571,51 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
     <div id="todoList"></div>
   </section>
 
+  <!-- ================= BÜTÇE ================= -->
+  <section class="view" id="v-btc">
+    <div class="monthbar">
+      <button class="ico" id="btcPrev" title="Önceki ay">‹</button>
+      <b id="btcMonth">—</b>
+      <button class="ico" id="btcNext" title="Sonraki ay">›</button>
+      <button class="btn gh sm" id="btcToday">bu ay</button>
+      <div style="margin-left:auto"><button class="btn pri" id="btcAdd">+ Kalem Ekle</button></div>
+    </div>
+    <div class="kpi" id="btcKpi"></div>
+    <div class="grid2">
+      <div>
+        <div class="card">
+          <h3>Giderler</h3>
+          <div class="quickbar">
+            <input type="number" id="qAmount" inputmode="decimal" step="0.01" placeholder="tutar €" />
+            <input id="qName" placeholder="ad (isteğe bağlı)" />
+            <select id="qCat"></select>
+            <button class="btn" id="qAdd">＋ Hızlı Ekle</button>
+          </div>
+          <div class="chips" id="btcMode" style="margin-bottom:12px">
+            <button class="chip on" data-m="cat">Kategoriye göre</button>
+            <button class="chip" data-m="item">Kaleme göre</button>
+          </div>
+          <div class="chartwrap">
+            <div id="btcChart"></div>
+            <div id="btcLegend" class="legendlist"></div>
+          </div>
+        </div>
+        <div id="btcOutList" style="margin-top:16px"></div>
+      </div>
+      <aside style="display:grid;gap:16px;align-content:start">
+        <div class="card">
+          <h3>Gelirler</h3>
+          <div id="btcInList"></div>
+          <button class="btn gh sm" id="btcAddIn" style="width:100%;margin-top:11px">+ Gelir Ekle</button>
+        </div>
+        <div class="card" id="btcInstCard" style="display:none">
+          <h3>Taksitler</h3><div id="btcInst"></div>
+        </div>
+        <div class="card"><h3>Özet</h3><div id="btcSummary"></div></div>
+      </aside>
+    </div>
+  </section>
+
   <!-- ================= PROFİL ================= -->
   <section class="view" id="v-prof">
     <div class="grid2">
@@ -667,6 +744,38 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
     <div class="mfoot">
       <button class="btn gh" id="asCancel">Vazgeç</button>
       <button class="btn pri" id="asSave">Ekle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BÜTÇE KALEMİ MODALI ================= -->
+<div class="ov" id="ovBtc">
+  <div class="modal" style="width:min(460px,100%)">
+    <h3 id="btcTitle">Kalem Ekle</h3>
+    <div class="chips" id="b_kind" style="margin-bottom:14px">
+      <button class="chip" data-k="out">− Gider</button>
+      <button class="chip" data-k="in">+ Gelir</button>
+    </div>
+    <div class="row">
+      <label class="fld"><span>Ad</span><input id="b_name" placeholder="örn: IKEA taksiti / Çamaşır makinesi / Maaş" /></label>
+      <label class="fld"><span>Tutar (€)</span><input id="b_amount" type="number" inputmode="decimal" step="0.01" /></label>
+    </div>
+    <label class="fld" id="b_catWrap"><span>Kategori</span><select id="b_cat"></select></label>
+    <label class="fld"><span>Tekrar</span>
+      <select id="b_type">
+        <option value="once">Tek seferlik</option>
+        <option value="monthly">Her ay</option>
+        <option value="installment">Taksitli</option>
+      </select></label>
+    <div class="row">
+      <label class="fld"><span id="b_monthLbl">Ay</span><input id="b_month" type="month" /></label>
+      <label class="fld" id="b_countWrap"><span>Taksit sayısı</span>
+        <input id="b_count" type="number" min="1" max="120" placeholder="12" /></label>
+    </div>
+    <div class="mfoot">
+      <button class="btn dan sm" id="btcDel" style="flex:0 0 auto;display:none">Sil</button>
+      <button class="btn gh" id="btcCancel">Vazgeç</button>
+      <button class="btn pri" id="btcSave">Kaydet</button>
     </div>
   </div>
 </div>
@@ -1117,11 +1226,11 @@ var H0=6,H1=24,HH=46;
 /* =========================================================================
    3) STATE
    ========================================================================= */
-var APP_VERSION="2026-07-28.8";
+var APP_VERSION="2026-07-29.2";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
-          events:[],plan:null,bought:{},scale:true,theme:"auto",workouts:[],templates:null,todos:[],cats:[],updatedAt:0};
+          events:[],plan:null,bought:{},scale:true,theme:"auto",workouts:[],templates:null,todos:[],cats:[],budget:{items:[]},updatedAt:0};
 }
 var S=load();
 function load(){
@@ -1132,7 +1241,8 @@ function load(){
             plan:o.plan||null,bought:o.bought||{},scale:o.scale!==false,
             theme:o.theme||"auto",workouts:o.workouts||[],
             templates:o.templates||null,todos:o.todos||[],
-            cats:o.cats||[],updatedAt:o.updatedAt||0};
+            cats:o.cats||[],budget:o.budget||{items:[]},
+            updatedAt:o.updatedAt||0};
   }catch(e){ return defaults(); }
 }
 function persist(){
@@ -1660,7 +1770,7 @@ var SYNC_KEY="yasam_sync_v1";
 var SY=(function(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY))||{}; }catch(e){ return {}; } })();
 function saveSync(){ try{ localStorage.setItem(SYNC_KEY,JSON.stringify(SY)); }catch(e){} }
 function syncReady(){ return !!(SY.owner&&SY.repo&&SY.token); }
-var SYNC_FIELDS=["profile","events","plan","bought","scale","theme","workouts","templates","todos","cats"];
+var SYNC_FIELDS=["profile","events","plan","bought","scale","theme","workouts","templates","todos","cats","budget"];
 
 /* --- yardımcılar --- */
 function b64(buf){
@@ -1829,6 +1939,223 @@ function scheduleSync(){
   if(!syncBooted) return;
   clearTimeout(syncTimer);
   syncTimer=setTimeout(function(){ syncNow(true); },8000);   // yazma kotasını yormamak için
+}
+
+/* =========================================================================
+   5e) BÜTÇE — aylık gelir/gider, tekrarlayanlar ve taksitler
+   ========================================================================= */
+var CATS_OUT=[
+  {k:"market",   l:"Market",        c:"#00d3a7"},
+  {k:"kira",     l:"Kira",          c:"#7c5cff"},
+  {k:"fatura",   l:"Faturalar",     c:"#39b6ff"},
+  {k:"ulasim",   l:"Ulaşım",        c:"#ffb020"},
+  {k:"saglik",   l:"Sağlık",        c:"#ff5f6d"},
+  {k:"abonelik", l:"Abonelikler",   c:"#c86bfa"},
+  {k:"eglence",  l:"Eğlence",       c:"#ff8f4d"},
+  {k:"giyim",    l:"Giyim",         c:"#4dd4ac"},
+  {k:"egitim",   l:"Eğitim",        c:"#5b8def"},
+  {k:"taksit",   l:"Taksitli Alım", c:"#e05fa0"},
+  {k:"seyahat",  l:"Seyahat",       c:"#2fd4d4"},
+  {k:"diger",    l:"Diğer",         c:"#8a94a8"}
+];
+var PALETTE=["#7c5cff","#00d3a7","#39b6ff","#ffb020","#ff5f6d","#c86bfa","#ff8f4d",
+  "#4dd4ac","#5b8def","#e05fa0","#2fd4d4","#f2c14e","#9d8cff","#63d471","#ff6fae","#66c7ff"];
+function catOf(k){
+  for(var i=0;i<CATS_OUT.length;i++) if(CATS_OUT[i].k===k) return CATS_OUT[i];
+  return CATS_OUT[CATS_OUT.length-1];
+}
+var AYLAR=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+function ymOf(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
+function ymAdd(ym,n){ var p=ym.split("-"); return ymOf(new Date(+p[0],+p[1]-1+n,1)); }
+function ymDiff(a,b){ var x=a.split("-"),y=b.split("-"); return (+y[0]-+x[0])*12+(+y[1]-+x[1]); }
+function ymLabel(ym){ var p=ym.split("-"); return AYLAR[+p[1]-1]+" "+p[0]; }
+function money(v){
+  var n=Math.round((+v||0)*100)/100;
+  return n.toLocaleString("tr-TR",{minimumFractionDigits:(n%1?2:0),maximumFractionDigits:2})+" €";
+}
+var btcMonth=ymOf(new Date());
+
+/* Kalem şu ayda geçerli mi? */
+function inMonth(it,ym){
+  var start=it.month||ym;
+  if(it.type==="once") return start===ym;
+  var d=ymDiff(start,ym);
+  if(d<0) return false;
+  if(it.type==="installment") return d<(+it.count||1);
+  return true;                                  // monthly
+}
+function itemsOf(kind,ym){
+  return (S.budget.items||[]).filter(function(it){ return it.kind===kind&&inMonth(it,ym); });
+}
+function sumOf(kind,ym){
+  return itemsOf(kind,ym).reduce(function(t,it){ return t+(+it.amount||0); },0);
+}
+function itemSub(it,ym){
+  if(it.type==="monthly") return "her ay";
+  if(it.type==="installment"){
+    var n=ymDiff(it.month,ym)+1;
+    return "taksit "+n+"/"+(+it.count||1);
+  }
+  return it.day?("gün "+it.day):"tek seferlik";
+}
+/* Renkli halka */
+function donutSvg(parts,total){
+  var R=54,C=2*Math.PI*R,off=0;
+  var segs=parts.map(function(p){
+    var len=total?C*(p.v/total):0;
+    var el='<circle class="seg" r="'+R+'" cx="70" cy="70" fill="none" stroke="'+p.c+'" stroke-width="21" '+
+      'stroke-linecap="butt" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" '+
+      'stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 70 70)"><title>'+
+      esc(p.l)+' · '+money(p.v)+'</title></circle>';
+    off+=len; return el;
+  }).join("");
+  return '<svg viewBox="0 0 140 140" class="donut" role="img" aria-label="Gider dağılımı">'+
+    '<circle r="'+R+'" cx="70" cy="70" fill="none" stroke="var(--track)" stroke-width="21"/>'+segs+
+    '<text x="70" y="68" text-anchor="middle" class="dnum">'+money(total)+'</text>'+
+    '<text x="70" y="82" text-anchor="middle" class="dlbl">bu ay gider</text></svg>';
+}
+function renderBtc(){
+  if(!S.budget) S.budget={items:[]};
+  $("#btcMonth").textContent=ymLabel(btcMonth);
+  $$("#btcMode .chip").forEach(function(b){
+    b.classList.toggle("on",b.dataset.m===((S.budget.chartMode==="item")?"item":"cat")); });
+  var out=itemsOf("out",btcMonth),inc=itemsOf("in",btcMonth);
+  var tOut=out.reduce(function(t,i){return t+(+i.amount||0);},0);
+  var tIn=inc.reduce(function(t,i){return t+(+i.amount||0);},0);
+  var net=tIn-tOut;
+
+  /* KPI */
+  var sabit=out.filter(function(i){return i.type!=="once";}).reduce(function(t,i){return t+(+i.amount||0);},0);
+  $("#btcKpi").innerHTML=
+    kpi("Gelir",money(tIn),"")+kpi("Gider",money(tOut),"")+
+    '<div class="k"><i>Kalan</i><b class="net '+(net>=0?"pos":"neg")+'" style="font-size:21px">'+money(net)+'</b></div>'+
+    kpi("Sabit giderler",money(sabit),"")+
+    kpi("Değişken",money(tOut-sabit),"");
+
+  /* Halka + açıklama */
+  var mode=(S.budget.chartMode==="item")?"item":"cat",parts;
+  if(mode==="cat"){
+    var byCat={};
+    out.forEach(function(i){ var k=i.cat||"diger"; byCat[k]=(byCat[k]||0)+(+i.amount||0); });
+    parts=Object.keys(byCat).map(function(k){
+      var c=catOf(k); return {l:c.l,c:c.c,v:byCat[k]};
+    }).sort(function(a,b){ return b.v-a.v; });
+  }else{
+    var byName={};
+    out.forEach(function(i){
+      var n=(i.name||catOf(i.cat).l).trim();
+      byName[n]=(byName[n]||0)+(+i.amount||0);
+    });
+    parts=Object.keys(byName).map(function(n){ return {l:n,v:byName[n]}; })
+      .sort(function(a,b){ return b.v-a.v; })
+      .map(function(x,i){ x.c=PALETTE[i%PALETTE.length]; return x; });
+  }
+  $("#btcChart").innerHTML=donutSvg(parts,tOut);
+  $("#btcLegend").innerHTML=parts.length?parts.map(function(p){
+    return '<div class="lrow"><i style="background:'+p.c+'"></i><span class="ln">'+esc(p.l)+'</span>'+
+      '<span class="lv">'+money(p.v)+'</span><span class="lp">%'+Math.round(p.v/tOut*100)+'</span></div>';
+  }).join(""):'<div class="hint" style="margin:0">Bu ay gider yok. Yukarıdan hızlı ekleyebilirsin.</div>';
+
+  /* Gider listesi: sabitler ve tek seferlikler ayrı */
+  function rowHtml(it){
+    var c=catOf(it.cat);
+    return '<div class="btcrow'+(it.kind==="in"?" in":"")+'" data-bid="'+it.id+'">'+
+      (it.kind==="out"?'<span class="dot" style="background:'+c.c+'"></span>':'')+
+      '<span class="nm">'+esc(it.name||(it.kind==="in"?"Gelir":c.l))+
+        '<span class="sub">'+(it.kind==="out"?esc(c.l)+' · ':'')+itemSub(it,btcMonth)+'</span></span>'+
+      '<span class="amt">'+(it.kind==="in"?"+":"−")+money(it.amount)+'</span>'+
+      '<button class="ico" data-bdel="'+it.id+'" title="Sil">✕</button></div>';
+  }
+  var fixed=out.filter(function(i){return i.type!=="once";}),
+      once=out.filter(function(i){return i.type==="once";})
+        .sort(function(a,b){ return (b.day||0)-(a.day||0); });
+  $("#btcOutList").innerHTML=
+    (fixed.length?'<div class="groupttl">Sabit ve taksitli ('+fixed.length+')</div>'+fixed.map(rowHtml).join(""):"")+
+    (once.length?'<div class="groupttl">Bu ayki harcamalar ('+once.length+')</div>'+once.map(rowHtml).join(""):"")+
+    (out.length?"":'<div class="empty">Bu ay için gider kaydı yok.</div>');
+  $("#btcInList").innerHTML=inc.length?inc.map(rowHtml).join("")
+    :'<div class="empty" style="padding:16px">Gelir eklenmedi.</div>';
+
+  /* Taksitler */
+  var taks=out.filter(function(i){ return i.type==="installment"; })
+    .sort(function(a,b){ return b.amount-a.amount; });
+  $("#btcInstCard").style.display=taks.length?"block":"none";
+  if(taks.length){
+    var kalanToplam=0;
+    var html=taks.map(function(it){
+      var n=ymDiff(it.month,btcMonth)+1,c=+it.count||1;
+      var kalan=(c-n)*(+it.amount||0); kalanToplam+=kalan;
+      var pct=Math.round(n/c*100);
+      return '<div class="bar" style="margin:12px 0 4px"><div class="lb">'+
+        '<span>'+esc(it.name||"Taksit")+'</span><b>'+n+'/'+c+'</b></div>'+
+        '<div class="tr"><div class="fl p" style="width:'+pct+'%"></div></div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--tx3);margin-top:4px">'+
+        '<span>ayda '+money(it.amount)+'</span><span>'+(kalan>0?money(kalan)+" kaldı":"son taksit")+'</span></div></div>';
+    }).join("");
+    $("#btcInst").innerHTML=html+
+      '<div class="stat" style="margin-top:10px"><span>Kalan toplam borç</span><b>'+money(kalanToplam)+'</b></div>'+
+      '<div class="stat"><span>Aylık taksit yükü</span><b>'+
+        money(taks.reduce(function(t,i){return t+(+i.amount||0);},0))+'</b></div>';
+  }
+
+  /* Özet */
+  var prev=ymAdd(btcMonth,-1),pOut=sumOf("out",prev);
+  var days=new Date(+btcMonth.split("-")[0],+btcMonth.split("-")[1],0).getDate();
+  var today=new Date(),isNow=(ymOf(today)===btcMonth);
+  var left=isNow?(days-today.getDate()+1):0;
+  $("#btcSummary").innerHTML=
+    row("Gün sayısı",days)+
+    row("Günlük ortalama gider",money(tOut/days))+
+    (isNow?row("Kalan gün",left+" gün"):"")+
+    (isNow&&net>0?row("Günlük harcanabilir",money(net/Math.max(1,left))):"")+
+    row("Geçen ay gider",money(pOut))+
+    (pOut?row("Değişim",(tOut>=pOut?"+":"")+money(tOut-pOut)):"");
+}
+
+/* ---------- Kalem ekleme / düzenleme ---------- */
+var btcEdit=null,btcKind="out";
+function fillCatSelect(el,val){
+  el.innerHTML=CATS_OUT.map(function(c){
+    return '<option value="'+c.k+'"'+(c.k===val?" selected":"")+'>'+c.l+'</option>'; }).join("");
+}
+function openBtc(id,kind){
+  var it=(S.budget.items||[]).filter(function(x){return x.id===id;})[0];
+  btcEdit=it?it.id:null;
+  btcKind=it?it.kind:(kind||"out");
+  $("#btcTitle").textContent=it?"Kalemi Düzenle":(btcKind==="in"?"Gelir Ekle":"Gider Ekle");
+  $$("#b_kind .chip").forEach(function(b){ b.classList.toggle("on",b.dataset.k===btcKind); });
+  $("#b_name").value=it?(it.name||""):"";
+  $("#b_amount").value=it?it.amount:"";
+  fillCatSelect($("#b_cat"),it?it.cat:"market");
+  $("#b_type").value=it?it.type:"once";
+  $("#b_month").value=it?it.month:btcMonth;
+  $("#b_count").value=it&&it.count?it.count:"";
+  $("#btcDel").style.display=it?"block":"none";
+  syncBtcForm();
+  $("#ovBtc").classList.add("on");
+  setTimeout(function(){ var e=$("#b_name"); if(e&&!e.value) e.focus(); },60);
+}
+function syncBtcForm(){
+  var t=$("#b_type").value;
+  $("#b_catWrap").style.display=(btcKind==="out")?"block":"none";
+  $("#b_countWrap").style.display=(t==="installment")?"block":"none";
+  $("#b_monthLbl").textContent=(t==="once")?"Ay":"Başlangıç ayı";
+}
+function saveBtc(){
+  var amt=parseFloat(String($("#b_amount").value).replace(",","."));
+  if(!amt||amt<=0){ toast("Tutar gir"); return; }
+  var it=(S.budget.items||[]).filter(function(x){return x.id===btcEdit;})[0];
+  if(!it){ it={id:uid()}; S.budget.items.push(it); }
+  it.kind=btcKind;
+  it.name=$("#b_name").value.trim()||(btcKind==="in"?"Gelir":catOf($("#b_cat").value).l);
+  it.amount=amt;
+  it.cat=(btcKind==="out")?$("#b_cat").value:null;
+  it.type=$("#b_type").value;
+  it.month=$("#b_month").value||btcMonth;
+  it.count=(it.type==="installment")?Math.max(1,+$("#b_count").value||1):null;
+  if(it.type==="once"&&!it.day) it.day=(ymOf(new Date())===it.month)?new Date().getDate():null;
+  save(); renderBtc(); $("#ovBtc").classList.remove("on");
+  toast("Kaydedildi ✓");
 }
 
 /* =========================================================================
@@ -2146,6 +2473,26 @@ function buildExport(){
               sport_sessions:S.events.filter(function(e){return e.type==="sport";}).length,
               estimated_burn_kcal:k};
     })(),
+    budget:(function(){
+      var ym=ymOf(new Date()),items=(S.budget&&S.budget.items)||[];
+      return {
+        month:ym,currency:"EUR",
+        income_total:+sumOf("in",ym).toFixed(2),
+        expense_total:+sumOf("out",ym).toFixed(2),
+        net:+(sumOf("in",ym)-sumOf("out",ym)).toFixed(2),
+        by_category:(function(){
+          var m={}; itemsOf("out",ym).forEach(function(i){
+            var c=catOf(i.cat); m[c.l]=(m[c.l]||0)+(+i.amount||0); });
+          Object.keys(m).forEach(function(k){ m[k]=+m[k].toFixed(2); });
+          return m;
+        })(),
+        items:items.map(function(i){
+          return {id:i.id,kind:i.kind==="in"?"income":"expense",name:i.name,amount:i.amount,
+                  category:i.cat?catOf(i.cat).l:null,type:i.type,month:i.month,
+                  installments:i.count||null,active_this_month:inMonth(i,ym)};
+        })
+      };
+    })(),
     todoCategories:S.cats.slice(),
     todos:S.todos.map(function(t){
       return {id:t.id,title:t.title,category:t.cat||null,done:!!t.done,
@@ -2237,6 +2584,7 @@ function show(v){
   $$("#tabs button").forEach(function(b){ b.classList.toggle("on",b.dataset.v===v); });
   if(v==="eks")  renderEks();
   if(v==="todo") renderTodos();
+  if(v==="btc")  renderBtc();
   if(v==="food") renderFood();
   if(v==="shop") renderShop();
   if(v==="prof") fillProfile();
@@ -2264,6 +2612,62 @@ $("#btnCopyPrev").addEventListener("click",function(){
     S.events.push({id:uid(),day:i,type:"work",start:"09:00",end:"18:00",title:"Mesai",note:""});
   }
   save(); renderCal(); toast("5 günlük mesai eklendi ✓");
+});
+
+/* Bütçe */
+$("#btcPrev").addEventListener("click",function(){ btcMonth=ymAdd(btcMonth,-1); renderBtc(); });
+$("#btcNext").addEventListener("click",function(){ btcMonth=ymAdd(btcMonth,1); renderBtc(); });
+$("#btcToday").addEventListener("click",function(){ btcMonth=ymOf(new Date()); renderBtc(); });
+$("#btcAdd").addEventListener("click",function(){ openBtc(null,"out"); });
+$("#btcAddIn").addEventListener("click",function(){ openBtc(null,"in"); });
+$("#btcMode").addEventListener("click",function(e){
+  var b=e.target.closest(".chip"); if(!b) return;
+  S.budget.chartMode=b.dataset.m;
+  $$("#btcMode .chip").forEach(function(x){ x.classList.toggle("on",x===b); });
+  save(); renderBtc();
+});
+$("#qAdd").addEventListener("click",function(){
+  var v=parseFloat(String($("#qAmount").value).replace(",","."));
+  if(!v||v<=0) return toast("Tutar gir");
+  var c=$("#qCat").value,now=new Date();
+  S.budget.items.push({id:uid(),kind:"out",name:($("#qName").value.trim()||catOf(c).l),amount:v,cat:c,type:"once",
+    month:ymOf(now),day:(ymOf(now)===btcMonth?now.getDate():null)});
+  if(ymOf(now)!==btcMonth) btcMonth=ymOf(now);
+  $("#qAmount").value=""; $("#qName").value="";
+  save(); renderBtc(); toast(money(v)+" eklendi");
+});
+$("#qAmount").addEventListener("keydown",function(e){ if(e.key==="Enter") $("#qAdd").click(); });
+$("#qName").addEventListener("keydown",function(e){ if(e.key==="Enter") $("#qAdd").click(); });
+document.addEventListener("click",function(e){
+  var d=e.target.closest("[data-bdel]");
+  if(d){
+    e.stopPropagation();
+    var it=(S.budget.items||[]).filter(function(x){return x.id===d.dataset.bdel;})[0];
+    if(!it) return;
+    var msg=(it.type==="once")?"Bu kalem silinsin mi?":
+      '"'+(it.name||"")+'" tamamen silinsin mi? (Tekrarlayan kalem, geçmiş aylardan da kalkar)';
+    if(!confirm(msg)) return;
+    S.budget.items=S.budget.items.filter(function(x){ return x.id!==it.id; });
+    save(); renderBtc(); toast("Silindi"); return;
+  }
+  var r=e.target.closest("[data-bid]");
+  if(r) openBtc(r.dataset.bid);
+});
+$("#b_kind").addEventListener("click",function(e){
+  var b=e.target.closest(".chip"); if(!b) return;
+  btcKind=b.dataset.k;
+  $$("#b_kind .chip").forEach(function(x){ x.classList.toggle("on",x===b); });
+  $("#btcTitle").textContent=btcEdit?"Kalemi Düzenle":(btcKind==="in"?"Gelir Ekle":"Gider Ekle");
+  syncBtcForm();
+});
+$("#b_type").addEventListener("change",syncBtcForm);
+$("#btcSave").addEventListener("click",saveBtc);
+$("#btcCancel").addEventListener("click",function(){ $("#ovBtc").classList.remove("on"); });
+$("#ovBtc").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#btcDel").addEventListener("click",function(){
+  if(!btcEdit||!confirm("Kalem silinsin mi?")) return;
+  S.budget.items=S.budget.items.filter(function(x){ return x.id!==btcEdit; });
+  save(); renderBtc(); $("#ovBtc").classList.remove("on"); toast("Silindi");
 });
 
 /* Yapılacaklar */
@@ -2610,7 +3014,7 @@ $("#btnReset").addEventListener("click",function(){
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){ closeModal(); $("#ovPick").classList.remove("on");
     $("#ovAssign").classList.remove("on"); $("#ovJson").classList.remove("on");
-    $("#ovRec").classList.remove("on");
+    $("#ovRec").classList.remove("on"); $("#ovBtc").classList.remove("on");
     if($("#ovWk").classList.contains("on")) saveWk(true); }
   if(e.key==="Enter"&&$("#ov").classList.contains("on")) saveEvent();
 });
@@ -2685,6 +3089,7 @@ window.addEventListener("online",function(){ if(syncReady()) syncNow(true); });
 var BOOT_STAMP=S.updatedAt||0;
 purgeTodos();
 fillSyncForm();
+fillCatSelect($("#qCat"),"market");
 setSync(syncReady()?"ok":"off");
 if(!S.templates) S.templates=JSON.parse(JSON.stringify(DEFAULT_TPL));
 applyTheme();
