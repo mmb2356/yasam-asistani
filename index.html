@@ -650,11 +650,11 @@ input[type=time]::-webkit-calendar-picker-indicator{display:none}
     background:var(--gBg);border:1px solid transparent;color:var(--gTx);font-size:19px;
     line-height:1;cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent}
   .mico:active{background:var(--gOn);color:var(--gOnTx)}
-  .mico.burger{flex-direction:column;gap:4px}
-  .mico.burger span{width:16px;height:2px;border-radius:2px;background:currentColor;transition:.22s}
-  .mico.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  .mico.burger{flex-direction:column;gap:3px}
+  .mico.burger span{width:19px;height:2.5px;border-radius:2px;background:currentColor;transition:.22s}
+  .mico.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
   .mico.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
-  .mico.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+  .mico.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
   /* sol menü → çekmece */
   .side{position:fixed;top:0;left:0;bottom:0;width:min(280px,84vw);z-index:95;
     border-radius:0 18px 18px 0;border-left:none;overflow-y:auto;
@@ -3751,7 +3751,7 @@ var PX_H=ROW_H/STEP;              /* saat başına piksel */
 /* =========================================================================
    3) STATE
    ========================================================================= */
-var APP_VERSION="2026-08-01.1";
+var APP_VERSION="2026-08-01.2";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
@@ -5926,6 +5926,48 @@ function show(v){
 /* Telefon: çekmece + üst çubuk */
 $("#btnDrawer").addEventListener("click",function(){ drawer(!$(".side").classList.contains("open")); });
 $("#drawerScrim").addEventListener("click",function(){ drawer(false); });
+/* Ekranın sol kenarından sürükleyerek aç / çekmeceyi sola iterek kapat */
+(function(){
+  var sw=null;
+  function mob(){ return window.innerWidth<=820; }
+  function sd(){ return $(".side"); }
+  document.addEventListener("touchstart",function(e){
+    if(!mob()||e.touches.length!==1) return;
+    if(document.querySelector(".ov.on")) return;              /* modal açıkken karışmasın */
+    var t=e.touches[0],op=sd().classList.contains("open");
+    if(!op && t.clientX>28) return;
+    if(op && !(e.target.closest&&e.target.closest(".side"))) return;
+    sw={x0:t.clientX,y0:t.clientY,op:op,on:false,w:sd().offsetWidth||280};
+  },{passive:true});
+  document.addEventListener("touchmove",function(e){
+    if(!sw) return;
+    var t=e.touches[0],dx=t.clientX-sw.x0,dy=t.clientY-sw.y0;
+    if(!sw.on){
+      if(Math.abs(dy)>Math.abs(dx)){ sw=null; return; }        /* dikey kaydırma serbest */
+      if(Math.abs(dx)<12) return;
+      sw.on=true;
+      sd().style.transition="none";
+      $("#drawerScrim").style.transition="none";
+      $("#drawerScrim").classList.add("on");
+    }
+    var pos=sw.op?Math.min(0,dx):Math.min(0,-sw.w+Math.max(0,dx));
+    sd().style.transform="translateX("+pos+"px)";
+    $("#drawerScrim").style.opacity=String(Math.max(0,1-Math.abs(pos)/sw.w));
+    if(e.cancelable) e.preventDefault();
+  },{passive:false});
+  function endSwipe(e){
+    if(!sw) return;
+    var st=sw; sw=null;
+    if(!st.on) return;
+    sd().style.transition=""; sd().style.transform="";
+    $("#drawerScrim").style.transition=""; $("#drawerScrim").style.opacity="";
+    var t=(e.changedTouches&&e.changedTouches[0])||{clientX:st.x0};
+    var dx=t.clientX-st.x0;
+    drawer(st.op ? (dx>-st.w*0.3) : (dx>st.w*0.35));
+  }
+  document.addEventListener("touchend",endSwipe);
+  document.addEventListener("touchcancel",endSwipe);
+})();
 $("#btnMSearch").addEventListener("click",palOpen);
 $("#btnMSync").addEventListener("click",function(){ $("#btnSync").click(); });
 $("#dayStrip").addEventListener("click",function(e){
