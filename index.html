@@ -833,6 +833,7 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
       <button data-v="todo">Yapılacaklar</button>
       <button data-v="btc">Bütçe</button>
       <button data-v="sag">Sağlık</button>
+      <button data-v="hobi">Hobi</button>
       <button data-v="ayar">Ayarlar</button>
     </nav>
     <div class="sideact">
@@ -1115,6 +1116,70 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
     </div>
   </section>
 
+  <!-- ================= HOBİ ================= -->
+  <section class="view" id="v-hobi">
+    <div class="sechead">
+      <h2>Hobi</h2>
+      <div class="sp">
+        <span class="hint" id="hbWhen" style="align-self:center"></span>
+        <button class="btn" id="hbRefresh">⟳ Şimdi güncelle</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>Yaklaşanlar</h3>
+      <div id="hbUpcoming"></div>
+      <div id="hbErr"></div>
+    </div>
+
+    <div class="grid2">
+      <div style="display:grid;gap:16px">
+        <div class="card">
+          <h3>Takımlar</h3>
+          <div class="quickbar">
+            <input id="hbTeamQ" placeholder="takım ara: Galatasaray…" />
+            <button class="btn pri" id="hbTeamFind">Ara</button>
+          </div>
+          <div id="hbTeamRes"></div>
+          <div id="hbTeams" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h3>Sanatçılar</h3>
+          <div class="quickbar">
+            <input id="hbArtQ" placeholder="sanatçı: Metallica…" />
+            <select id="hbArtC" style="max-width:120px">
+              <option value="DE">Almanya</option>
+              <option value="NL">Hollanda</option>
+              <option value="AT">Avusturya</option>
+              <option value="FR">Fransa</option>
+              <option value="TR">Türkiye</option>
+              <option value="">Hepsi</option>
+            </select>
+            <button class="btn pri" id="hbArtAdd">+ Ekle</button>
+          </div>
+          <div id="hbArtists" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <aside style="display:grid;gap:16px">
+        <div class="card">
+          <h3>Veri Kaynakları</h3>
+          <p class="hint" style="margin:0 0 12px">Anahtarlar yalnızca bu cihazda saklanır.
+            Fikstür için TheSportsDB, konserler için Ticketmaster.</p>
+          <label class="fld"><span>TheSportsDB anahtarı</span>
+            <input id="hb_tsdb" placeholder="3 (ücretsiz test anahtarı)" autocomplete="off" /></label>
+          <label class="fld"><span>Ticketmaster anahtarı</span>
+            <div class="pwfield">
+              <input id="hb_tm" type="password" placeholder="developer.ticketmaster.com" autocomplete="off" />
+              <button class="ico eye" type="button" data-eye="hb_tm" title="Göster / gizle">👁</button>
+            </div></label>
+          <button class="btn pri" id="hbSaveKeys" style="width:100%">Kaydet</button>
+          <p class="hint" style="margin-top:10px">Ticketmaster anahtarı ücretsiz: siteye üye ol,
+            uygulama oluştur, "Consumer Key" değerini buraya yapıştır.</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
   <!-- ================= AYARLAR ================= -->
   <section class="view" id="v-ayar">
     <div class="grid2">
@@ -1127,6 +1192,13 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
             <button class="chip" data-t="light">☀︎ Açık</button>
             <button class="chip" data-t="dark">☾ Koyu</button>
           </div>
+        </div>
+        <div class="card">
+          <h3>Rutinler</h3>
+          <p class="hint" style="margin:0 0 12px">Bir şey olduğunda otomatik yapılacaklar:
+            maç günü menüyü değiştir, malzemeleri alışverişe ekle, hatırlatıcı koy.</p>
+          <div id="rtList"></div>
+          <button class="btn pri" id="rtAdd" style="width:100%;margin-top:12px">+ Rutin Ekle</button>
         </div>
         <div class="card">
           <h3>Dil</h3>
@@ -1377,6 +1449,57 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
   </div>
 </div>
 
+<!-- ================= RUTİN MODALI ================= -->
+<div class="ov" id="ovRt">
+  <div class="modal" style="width:min(540px,100%)">
+    <h3 id="rtTitle">Rutin Ekle</h3>
+    <label class="fld"><span>Rutin adı</span><input id="rt_name" placeholder="örn: Maç günü pizza" /></label>
+
+    <div class="instttl" style="display:block">Ne zaman</div>
+    <div class="row">
+      <label class="fld"><span>Tetikleyici</span>
+        <select id="rt_trig">
+          <option value="ev">Takvimde aktivite olduğunda</option>
+          <option value="weekday">Haftanın belirli bir günü</option>
+        </select></label>
+      <label class="fld" id="rt_evWrap"><span>Aktivite türü</span><select id="rt_evType"></select></label>
+      <label class="fld" id="rt_dayWrap" style="display:none"><span>Gün</span><select id="rt_day"></select></label>
+    </div>
+    <label class="fld" id="rt_textWrap"><span>Başlıkta geçen kelime (opsiyonel)</span>
+      <input id="rt_text" placeholder="örn: maç — boş bırakırsan türdeki her aktivite sayılır" /></label>
+
+    <div class="instttl" style="display:block">Ne yapılsın</div>
+    <label class="fld"><span>Alışveriş listesine ekle (virgülle ayır)</span>
+      <input id="rt_shop" placeholder="pizza hamuru, sucuk, mısır" /></label>
+    <div class="row">
+      <label class="fld"><span>Öğünü değiştir</span>
+        <select id="rt_mealSlot">
+          <option value="">— değiştirme —</option>
+          <option value="b">Kahvaltı</option>
+          <option value="s">Ara Öğün</option>
+          <option value="l">Öğle</option>
+          <option value="d">Akşam</option>
+        </select></label>
+      <label class="fld"><span>Ne yiyeceksin</span>
+        <input id="rt_mealText" placeholder="örn: Sucuklu mısırlı pizza" /></label>
+    </div>
+    <label class="fld"><span>Yapılacaklara ekle (opsiyonel)</span>
+      <input id="rt_todo" placeholder="örn: Hamuru akşamdan çıkar" /></label>
+    <div class="row">
+      <label class="fld"><span>Hatırlatıcı metni (opsiyonel)</span>
+        <input id="rt_remind" placeholder="örn: Maç başlıyor" /></label>
+      <label class="fld"><span>Kaç gün önce</span>
+        <input id="rt_lead" type="number" min="0" max="14" placeholder="0" /></label>
+    </div>
+    <div class="instinfo" id="rt_info"></div>
+    <div class="mfoot">
+      <button class="btn dan sm" id="rtDel" style="flex:0 0 auto;display:none">Sil</button>
+      <button class="btn gh" id="rtCancel">Vazgeç</button>
+      <button class="btn pri" id="rtSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= İLAÇ MODALI ================= -->
 <div class="ov" id="ovMed">
   <div class="modal" style="width:min(520px,100%)">
@@ -1558,6 +1681,60 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
    ========================================================================= */
 var LANGS={tr:"Türkçe",en:"English",de:"Deutsch"};
 var DICT={en:{
+"Hobi":"Hobbies",
+"Yaklaşanlar":"Upcoming",
+"Takımlar":"Teams",
+"Sanatçılar":"Artists",
+"Veri Kaynakları":"Data sources",
+"takvime ekle":"add to calendar",
+"otomatik ekle":"auto-add",
+"otomatik":"auto",
+"Takvime otomatik eklenecek":"Will be added automatically",
+"Otomatik ekleme kapatıldı":"Auto-add turned off",
+"Takvime eklendi ✓":"Added to calendar ✓",
+"Takvimden kaldırıldı":"Removed from calendar",
+"Henüz etkinlik yok. Takım ya da sanatçı ekleyip güncelle.":"No events yet. Add a team or artist, then refresh.",
+"Takım eklenmedi.":"No teams yet.",
+"Sanatçı eklenmedi.":"No artists yet.",
+"tüm ülkeler":"all countries",
+"son güncelleme":"last update",
+"henüz güncellenmedi":"not updated yet",
+"güncelleniyor…":"updating…",
+"aranıyor…":"searching…",
+"Sonuç yok.":"No results.",
+"Arama başarısız: ":"Search failed: ",
+"Güncellenemedi: ":"Update failed: ",
+"etkinlik güncellendi":"events updated",
+"Yeni etkinlik yok":"No new events",
+"Ticketmaster anahtarı gerekli":"Ticketmaster key required",
+"Kaynak":"Source",
+"ekle":"add",
+"Maç":"Match",
+"Konser":"Concert",
+
+"Rutinler":"Routines",
+"Rutin Ekle":"Add routine",
+"Rutini Düzenle":"Edit routine",
+"Rutin silinsin mi?":"Delete routine?",
+"Rutin uygulandı":"Routine applied",
+"Rutin yok. Örnek: takvimde maç olduğunda akşam menüsünü pizza yap ve malzemeleri alışverişe ekle.":"No routines yet. Example: when there's a match in the calendar, switch dinner to pizza and add the ingredients to the shopping list.",
+"En az bir eylem seç":"Pick at least one action",
+"En az bir eylem seç: alışveriş, menü, yapılacak ya da hatırlatıcı.":"Pick at least one action: shopping, meal, to-do or reminder.",
+"Tetiklendiğinde:":"When triggered:",
+"önümüzdeki 7 gün taranır, her gün bir kez uygulanır":"the next 7 days are scanned, applied once per day",
+"herhangi bir aktivite":"any activity",
+"takvimde":"in calendar",
+"alışveriş":"shopping",
+"menü":"meal",
+"yapılacak":"to-do",
+"hatırlatıcı":"reminder",
+"eylem yok":"no action",
+"rutin":"routine",
+"rutin · plan dışı":"routine · off plan",
+"Aç / kapat":"On / off",
+"Durduruldu":"Paused",
+"Çalışıyor":"Running",
+
 "İlaçlar":"Medications",
 "Randevular":"Appointments",
 "Evcil Hayvanlar":"Pets",
@@ -2591,6 +2768,60 @@ var DICT={en:{
 "🥩 Kırmızı Et & Köfte":"🥩 Red Meat & Meatballs"
 },
 de:{
+"Hobi":"Hobbys",
+"Yaklaşanlar":"Demnächst",
+"Takımlar":"Mannschaften",
+"Sanatçılar":"Künstler",
+"Veri Kaynakları":"Datenquellen",
+"takvime ekle":"in den Kalender",
+"otomatik ekle":"automatisch",
+"otomatik":"automatisch",
+"Takvime otomatik eklenecek":"Wird automatisch eingetragen",
+"Otomatik ekleme kapatıldı":"Automatik aus",
+"Takvime eklendi ✓":"Zum Kalender ✓",
+"Takvimden kaldırıldı":"Aus Kalender entfernt",
+"Henüz etkinlik yok. Takım ya da sanatçı ekleyip güncelle.":"Noch keine Termine. Team oder Künstler hinzufügen und aktualisieren.",
+"Takım eklenmedi.":"Noch keine Mannschaften.",
+"Sanatçı eklenmedi.":"Noch keine Künstler.",
+"tüm ülkeler":"alle Länder",
+"son güncelleme":"zuletzt aktualisiert",
+"henüz güncellenmedi":"noch nicht aktualisiert",
+"güncelleniyor…":"wird aktualisiert…",
+"aranıyor…":"suche…",
+"Sonuç yok.":"Keine Treffer.",
+"Arama başarısız: ":"Suche fehlgeschlagen: ",
+"Güncellenemedi: ":"Aktualisierung fehlgeschlagen: ",
+"etkinlik güncellendi":"Termine aktualisiert",
+"Yeni etkinlik yok":"Keine neuen Termine",
+"Ticketmaster anahtarı gerekli":"Ticketmaster-Schlüssel nötig",
+"Kaynak":"Quelle",
+"ekle":"hinzufügen",
+"Maç":"Spiel",
+"Konser":"Konzert",
+
+"Rutinler":"Routinen",
+"Rutin Ekle":"Routine hinzufügen",
+"Rutini Düzenle":"Routine bearbeiten",
+"Rutin silinsin mi?":"Routine löschen?",
+"Rutin uygulandı":"Routine angewendet",
+"Rutin yok. Örnek: takvimde maç olduğunda akşam menüsünü pizza yap ve malzemeleri alışverişe ekle.":"Noch keine Routinen. Beispiel: Wenn im Kalender ein Spiel steht, Abendessen auf Pizza umstellen und Zutaten einkaufen.",
+"En az bir eylem seç":"Mindestens eine Aktion wählen",
+"En az bir eylem seç: alışveriş, menü, yapılacak ya da hatırlatıcı.":"Mindestens eine Aktion: Einkauf, Mahlzeit, Aufgabe oder Erinnerung.",
+"Tetiklendiğinde:":"Beim Auslösen:",
+"önümüzdeki 7 gün taranır, her gün bir kez uygulanır":"die nächsten 7 Tage werden geprüft, einmal pro Tag",
+"herhangi bir aktivite":"beliebige Aktivität",
+"takvimde":"im Kalender",
+"alışveriş":"Einkauf",
+"menü":"Mahlzeit",
+"yapılacak":"Aufgabe",
+"hatırlatıcı":"Erinnerung",
+"eylem yok":"keine Aktion",
+"rutin":"Routine",
+"rutin · plan dışı":"Routine · außerhalb",
+"Aç / kapat":"An / aus",
+"Durduruldu":"Pausiert",
+"Çalışıyor":"Aktiv",
+
 "İlaçlar":"Medikamente",
 "Randevular":"Termine",
 "Evcil Hayvanlar":"Haustiere",
@@ -4092,11 +4323,11 @@ var PX_H=ROW_H/STEP;              /* saat başına piksel */
 /* =========================================================================
    3) STATE
    ========================================================================= */
-var APP_VERSION="2026-08-02.1";
+var APP_VERSION="2026-11-09.2";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
-          events:[],plan:null,bought:{},scale:true,theme:"auto",lang:"tr",calView:"week",evTypes:[],workouts:[],templates:null,todos:[],cats:[],budget:{items:[]},fav:{},stats:{},reminders:[],extraShop:[],health:{meds:[],pets:[],appts:[]},updatedAt:0};
+          events:[],plan:null,bought:{},scale:true,theme:"auto",lang:"tr",calView:"week",evTypes:[],workouts:[],templates:null,todos:[],cats:[],budget:{items:[]},fav:{},stats:{},reminders:[],extraShop:[],health:{meds:[],pets:[],appts:[]},routines:[],rtDone:{},hobby:{teams:[],artists:[],events:[],keys:{tsdb:"3",tm:""},lastFetch:0,err:{}},updatedAt:0};
 }
 var S=load();
 function load(){
@@ -4209,17 +4440,26 @@ function scaleItems(r,f){
 }
 /* Günü kur: 4 öğünün toplam kalorisini hedefe ölçekle */
 function mealName(me){
+  if(me.free) return me.name;
   var base=T(me.rec.n);
   return me.side?(base+" + "+T(me.side.n)):base;
 }
 function buildDay(d){
   var ids=[d.b,d.s,d.l,d.d], side=(d.side&&REC[d.side])?REC[d.side]:null, base=0;
-  ids.forEach(function(id){ if(REC[id]) base+=recTotals(REC[id]).k; });
+  ids.forEach(function(id,ix){
+    if(d.ovr&&d.ovr[["b","s","l","d"][ix]]) return;
+    if(REC[id]) base+=recTotals(REC[id]).k;
+  });
   if(side) base+=recTotals(side).k;
   var f=1;
   if(S.scale&&base) f=Math.min(2,Math.max(0.55,calc().kcal/base));
   var out={factor:f,meals:[],totals:{k:0,p:0,c:0,f:0}};
   SLOTS.forEach(function(sl,ix){
+    if(d.ovr&&d.ovr[sl.k]){                       /* rutinden gelen serbest menü */
+      out.meals.push({slot:sl.k,slotLabel:slotLabel(sl.k),rec:null,free:true,
+                      name:d.ovr[sl.k],side:null,items:[],k:0});
+      return;
+    }
     var r=REC[ids[ix]]; if(!r) return;
     var items=scaleItems(r,f),nm=r.n;
     if(sl.k==="d"&&side){ items=items.concat(scaleItems(side,f)); nm=r.n+" + "+side.n; }
@@ -4731,7 +4971,7 @@ var SYNC_KEY="yasam_sync_v1";
 var SY=(function(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY))||{}; }catch(e){ return {}; } })();
 function saveSync(){ try{ localStorage.setItem(SYNC_KEY,JSON.stringify(SY)); }catch(e){} }
 function syncReady(){ return !!(SY.owner&&SY.repo&&SY.token); }
-var SYNC_FIELDS=["profile","events","plan","bought","scale","theme","workouts","templates","todos","cats","budget","fav","stats","reminders","extraShop","lang","evTypes","health"];
+var SYNC_FIELDS=["profile","events","plan","bought","scale","theme","workouts","templates","todos","cats","budget","fav","stats","reminders","extraShop","lang","evTypes","health","routines","rtDone","hobby"];
 
 /* --- yardımcılar --- */
 function b64(buf){
@@ -5220,8 +5460,10 @@ function renderBugun(){
   var day=S.plan.days[di],b=buildDay(day);
   $("#todayFood").innerHTML=b.meals.map(function(me){
     return '<div class="tline"><span class="tm">'+me.slotLabel+'</span>'+
-      '<span class="tx" data-bugunrec="'+me.rec.id+'" style="cursor:pointer">'+esc(mealName(me))+
-        '<small>'+me.k+' kcal · '+me.rec.t+' '+T("dk")+'</small></span></div>';
+      (me.free
+        ? '<span class="tx">'+esc(mealName(me))+'<small>'+T("rutin")+'</small></span></div>'
+        : '<span class="tx" data-bugunrec="'+me.rec.id+'" style="cursor:pointer">'+esc(mealName(me))+
+          '<small>'+me.k+' kcal · '+me.rec.t+' '+T("dk")+'</small></span></div>');
   }).join("")+
   '<div class="stat" style="margin-top:8px"><span>'+T("Günün toplamı")+'</span><b>'+b.totals.k+' kcal · P'+b.totals.p+'</b></div>'+
     '<button class="btn gh sm" id="btnPostpone" style="width:100%;margin-top:10px">'+
@@ -5635,6 +5877,243 @@ function petAge(p){
   var mo=(now.getFullYear()-b.getFullYear())*12+(now.getMonth()-b.getMonth());
   if(mo<24) return mo+" "+T("aylık");
   return Math.floor(mo/12)+" "+T("yaşında");
+}
+
+/* =========================================================================
+   5g3) RUTİNLER — "şu olduğunda şunları yap"
+   ========================================================================= */
+function RT(){ if(!S.routines) S.routines=[]; if(!S.rtDone) S.rtDone={}; return S.routines; }
+var RT_SLOTS={b:"Kahvaltı",s:"Ara Öğün",l:"Öğle",d:"Akşam"};
+/* Bir rutin, verilen günde tetikleniyor mu? */
+function rtMatch(r,d){
+  if(r.off) return false;
+  if(r.trig==="weekday") return (+r.day===wdOf(d));
+  /* takvimdeki aktivite */
+  var hit=null;
+  S.events.concat([]).forEach(function(e){
+    if(!evOccurs(e,d)) return;
+    if(r.evType&&r.evType!=="any"){
+      var key=(e.type==="u")?("u:"+e.ut):e.type;
+      if(key!==r.evType) return;
+    }
+    if(r.text){
+      var t=normTr((e.title||"")+" "+(e.note||"")+" "+(e.sport||""));
+      if(t.indexOf(normTr(r.text))<0) return;
+    }
+    if(!hit||t2m(e.start)<t2m(hit.start)) hit=e;
+  });
+  return hit;
+}
+/* Önümüzdeki günleri tara, eşleşenlere eylemleri uygula (bir kez) */
+function rtRun(silent){
+  RT();
+  var added=0,names=[];
+  for(var i=0;i<8;i++){
+    var d=new Date(); d.setDate(d.getDate()+i); d=midnight(d);
+    var iso=ymd(d);
+    S.routines.forEach(function(r){
+      var m=rtMatch(r,d); if(!m) return;
+      var key=r.id+"|"+iso;
+      if(S.rtDone[key]) return;
+      var did=rtApply(r,d,(m===true?null:m));
+      if(did){ S.rtDone[key]=Date.now(); added++; names.push(r.name); }
+    });
+  }
+  /* eski kayıtları temizle (60 günden eski) */
+  var lim=Date.now()-60*86400000;
+  Object.keys(S.rtDone).forEach(function(k){ if(S.rtDone[k]<lim) delete S.rtDone[k]; });
+  if(added){
+    save();
+    if(!silent) toast(T("Rutin uygulandı")+": "+names.slice(0,2).join(", ")+(names.length>2?"…":""));
+  }
+  return added;
+}
+function rtApply(r,d,ev){
+  var iso=ymd(d),did=false;
+  /* alışveriş kalemleri */
+  (r.shop||[]).forEach(function(x){
+    var nm=x.trim(); if(!nm) return;
+    if(!S.extraShop) S.extraShop=[];
+    if(S.extraShop.some(function(o){ return !o.done&&normTr(o.name)===normTr(nm); })) return;
+    S.extraShop.push({id:uid(),name:nm,qty:"",done:false,rt:r.id});
+    did=true;
+  });
+  /* menü değişikliği */
+  if(r.mealSlot&&r.mealText){
+    var di=wdOf(d);
+    if(S.plan&&S.plan.days&&S.plan.days[di]&&dayDiff(midnight(),d)<7){
+      if(!S.plan.days[di].ovr) S.plan.days[di].ovr={};
+      S.plan.days[di].ovr[r.mealSlot]=r.mealText;
+      did=true;
+    }
+  }
+  /* yapılacak */
+  if(r.todo){
+    var t=addTodo(r.todo,r.cat||"");
+    if(t){ t.date=iso; save(); did=true; }
+  }
+  /* hatırlatıcı */
+  if(r.remind){
+    if(!S.reminders) S.reminders=[];
+    var nm2=r.remind+(ev&&ev.start?(" · "+ev.start):"");
+    if(!S.reminders.some(function(x){ return x.date===iso&&x.name===nm2; })){
+      S.reminders.push({id:uid(),name:nm2,type:"once",date:iso,
+                        lead:Math.max(0,+r.lead||0),done:{},rt:r.id});
+      did=true;
+    }
+  }
+  return did;
+}
+function rtSummary(r){
+  var p=[];
+  if((r.shop||[]).length) p.push(T("alışveriş")+": "+r.shop.slice(0,3).join(", ")+((r.shop.length>3)?"…":""));
+  if(r.mealSlot&&r.mealText) p.push(T(RT_SLOTS[r.mealSlot])+" → "+r.mealText);
+  if(r.todo) p.push(T("yapılacak")+": "+r.todo);
+  if(r.remind) p.push(T("hatırlatıcı")+": "+r.remind);
+  return p.join(" · ")||T("eylem yok");
+}
+function rtTrigText(r){
+  if(r.trig==="weekday") return T("her")+" "+DAYS[+r.day||0];
+  var t=(r.evType&&r.evType!=="any")?evTypeLabel({type:(r.evType.indexOf("u:")===0?"u":r.evType),
+         ut:(r.evType.indexOf("u:")===0?r.evType.slice(2):null)}):T("herhangi bir aktivite");
+  return T("takvimde")+" "+t+(r.text?(' · "'+r.text+'"'):"");
+}
+
+/* =========================================================================
+   5g4) HOBİ — fikstür ve konser takibi
+   ========================================================================= */
+function HB(){
+  if(!S.hobby) S.hobby={};
+  var h=S.hobby;
+  if(!h.teams) h.teams=[]; if(!h.artists) h.artists=[]; if(!h.events) h.events=[];
+  if(!h.keys) h.keys={tsdb:"3",tm:""};
+  if(!h.err) h.err={};
+  return h;
+}
+var TSDB=function(k){ return "https://www.thesportsdb.com/api/v1/json/"+(k||"3")+"/"; };
+function hbJson(url){
+  return fetch(url,{cache:"no-store"}).then(function(r){
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return r.json();
+  });
+}
+/* --- takım arama --- */
+function hbFindTeam(q){
+  return hbJson(TSDB(HB().keys.tsdb)+"searchteams.php?t="+encodeURIComponent(q))
+    .then(function(j){ return (j&&j.teams)||[]; });
+}
+/* --- maçlar --- */
+function hbTeamEvents(t){
+  return hbJson(TSDB(HB().keys.tsdb)+"eventsnext.php?id="+encodeURIComponent(t.tid))
+    .then(function(j){
+      return ((j&&j.events)||[]).map(function(e){
+        var iso=e.strTimestamp||((e.dateEvent||"")+"T"+(e.strTime||"20:00:00")+"Z");
+        var d=new Date(iso);
+        if(isNaN(d)) return null;
+        return {id:"tsdb:"+e.idEvent,kind:"match",title:e.strEvent||t.name,
+                date:ymd(d),time:m2t(d.getHours()*60+d.getMinutes()),
+                venue:e.strVenue||"",sub:e.strLeague||"",
+                url:"https://www.thesportsdb.com/event/"+e.idEvent,
+                owner:t.id};
+      }).filter(Boolean);
+    });
+}
+/* --- konserler --- */
+function hbArtistEvents(a){
+  var k=HB().keys.tm;
+  if(!k) return Promise.reject(new Error(T("Ticketmaster anahtarı gerekli")));
+  var u="https://app.ticketmaster.com/discovery/v2/events.json?apikey="+encodeURIComponent(k)+
+        "&keyword="+encodeURIComponent(a.name)+"&size=30&sort=date,asc"+
+        (a.country?("&countryCode="+a.country):"");
+  return hbJson(u).then(function(j){
+    var list=(j&&j._embedded&&j._embedded.events)||[];
+    return list.filter(function(e){
+      return normTr(e.name||"").indexOf(normTr(a.name))>=0;
+    }).map(function(e){
+      var dt=(e.dates&&e.dates.start)||{},v=(e._embedded&&e._embedded.venues&&e._embedded.venues[0])||{};
+      if(!dt.localDate) return null;
+      return {id:"tm:"+e.id,kind:"concert",title:e.name,
+              date:dt.localDate,time:(dt.localTime||"20:00").slice(0,5),
+              venue:v.name||"",sub:[(v.city||{}).name,(v.country||{}).countryCode].filter(Boolean).join(", "),
+              url:e.url||"",owner:a.id};
+    }).filter(Boolean);
+  });
+}
+/* --- hepsini çek, birleştir --- */
+function hbFetch(force){
+  var h=HB(),now=Date.now();
+  if(!force&&h.lastFetch&&now-h.lastFetch<12*3600000) return Promise.resolve(0);
+  var jobs=[];
+  h.err={};
+  h.teams.forEach(function(t){
+    jobs.push(hbTeamEvents(t).catch(function(e){ h.err["t"+t.id]=t.name+": "+e.message; return []; }));
+  });
+  h.artists.forEach(function(a){
+    jobs.push(hbArtistEvents(a).catch(function(e){ h.err["a"+a.id]=a.name+": "+e.message; return []; }));
+  });
+  if(!jobs.length){ h.lastFetch=now; return Promise.resolve(0); }
+  return Promise.all(jobs).then(function(res){
+    var all=[].concat.apply([],res),byId={};
+    all.forEach(function(x){ byId[x.id]=x; });
+    /* var olanı güncelle, olmayanı ekle, geçmişi at */
+    var keep=h.events.filter(function(x){ return !byId[x.id]&&x.date>=ymd(new Date()); });
+    h.events=keep.concat(Object.keys(byId).map(function(k){
+      var old=h.events.filter(function(x){ return x.id===k; })[0]||{};
+      var nw=byId[k]; nw.pinned=!!old.pinned; return nw;
+    })).sort(function(a,b){ return (a.date+a.time).localeCompare(b.date+b.time); });
+    h.lastFetch=now;
+    hbSyncAuto();
+    save();
+    return all.length;
+  });
+}
+/* --- otomatik takvime yazma --- */
+function hbTypeId(kind){
+  var lbl=(kind==="concert")?"Konser":"Maç",id=(kind==="concert")?"konser":"mac";
+  if(!S.evTypes) S.evTypes=[];
+  if(!S.evTypes.some(function(t){ return t.id===id; }))
+    S.evTypes.push({id:id,l:T(lbl),c:(kind==="concert")?"#c86bfa":"#5b8def"});
+  return id;
+}
+function hbOwnerAuto(ev){
+  var h=HB();
+  var o=h.teams.concat(h.artists).filter(function(x){ return x.id===ev.owner; })[0];
+  return !!(o&&o.auto);
+}
+function hbSyncAuto(){
+  var h=HB(),ch=false;
+  h.events.forEach(function(ev){
+    if(!ev.pinned&&!hbOwnerAuto(ev)) return;
+    ch=hbPin(ev,true)||ch;
+  });
+  if(ch){ try{ rtRun(true); }catch(e){} }
+  return ch;
+}
+function hbPin(ev,quiet){
+  var dur=(ev.kind==="concert")?180:120;
+  var ex=S.events.filter(function(x){ return x.src===ev.id; })[0];
+  var start=ev.time||"20:00";
+  var o={day:wdOf(dOf(ev.date)),date:ev.date,rep:"",type:"u",ut:hbTypeId(ev.kind),
+         start:start,end:m2t(Math.min(23*60+50,t2m(start)+dur)),
+         title:ev.title,note:[ev.venue,ev.sub].filter(Boolean).join(" · "),src:ev.id};
+  if(ex){
+    var same=(ex.date===o.date&&ex.start===o.start&&ex.title===o.title);
+    if(same) return false;
+    Object.keys(o).forEach(function(k){ ex[k]=o[k]; });
+  }else{
+    o.id=uid(); S.events.push(o);
+  }
+  ev.pinned=true;
+  if(!quiet){ save(); try{ rtRun(true); }catch(e){} }
+  return true;
+}
+function hbUnpin(ev){
+  S.events=S.events.filter(function(x){ return x.src!==ev.id; });
+  ev.pinned=false; save();
+}
+function hbUpcoming(){
+  var today=ymd(new Date());
+  return HB().events.filter(function(e){ return e.date>=today; }).slice(0,40);
 }
 
 /* =========================================================================
@@ -6150,7 +6629,7 @@ function saveEvent(){
   var i=S.events.findIndex(function(x){return x.id===ev.id;});
   if(i>-1) S.events[i]=ev; else S.events.push(ev);
   if(type==="sport") syncWorkouts();          // Egzersiz sekmesinde kartı hazırla
-  save(); renderCal(); closeModal();
+  save(); try{ rtRun(); }catch(e){} renderCal(); closeModal();
   toast(i>-1?"Güncellendi":(type==="sport"?"Eklendi ✓ · detayı Egzersiz sekmesinde":"Eklendi ✓"));
 }
 
@@ -6188,8 +6667,10 @@ function renderFood(){
       b.meals.map(function(me){
         return '<div class="slotrow"><div class="sh">'+
           '<span class="st">'+me.slotLabel+'</span>'+
-          '<span class="sn" data-open="'+i+'|'+me.slot+'" title="'+T("Tarifi aç")+'">'+esc(mealName(me))+'</span>'+
-          '<span class="sk">'+me.k+' kcal · '+me.rec.t+T("′")+((me.slot==="d"&&me.side)?' · '+T("aynı yemek"):'')+'</span>'+
+          (me.free
+            ? '<span class="sn">'+esc(mealName(me))+'</span><span class="sk">'+T("rutin · plan dışı")+'</span>'
+            : '<span class="sn" data-open="'+i+'|'+me.slot+'" title="'+T("Tarifi aç")+'">'+esc(mealName(me))+'</span>'+
+              '<span class="sk">'+me.k+' kcal · '+me.rec.t+T("′")+((me.slot==="d"&&me.side)?' · '+T("aynı yemek"):'')+'</span>')+
           '<button class="ico" data-pick="'+i+'|'+me.slot+'" title="Listeden seç">☰</button>'+
           '<button class="ico" data-swap="'+i+'|'+me.slot+'" title="Rastgele değiştir">⟳</button></div>'+
           '<details><summary>malzemeler</summary><ul>'+me.items.map(function(it){
@@ -6478,6 +6959,14 @@ function buildExport(){
           })};
       })
     },
+    hobby:{
+      teams:HB().teams.map(function(t){ return {name:t.name,league:t.league||null,auto:!!t.auto}; }),
+      artists:HB().artists.map(function(a){ return {name:a.name,country:a.country||null,auto:!!a.auto}; }),
+      upcoming:hbUpcoming().map(function(e){
+        return {kind:e.kind,title:e.title,date:e.date,time:e.time,venue:e.venue||null,
+                info:e.sub||null,in_calendar:!!e.pinned,url:e.url||null};
+      })
+    },
     todoCategories:S.cats.slice(),
     todos:S.todos.map(function(t){
       return {id:t.id,title:t.title,category:t.cat||null,date:t.date||null,important:!!t.imp,done:!!t.done,
@@ -6507,6 +6996,8 @@ function buildExport(){
       return {day:DAYS[i],dayIndex:i,approved:!!d.ok,scaleFactor:+b.factor.toFixed(2),
         totals:{kcal:b.totals.k,protein_g:b.totals.p,carbs_g:b.totals.c,fat_g:b.totals.f},
         meals:b.meals.map(function(me){
+          if(me.free) return {slot:me.slotLabel,recipeId:null,name:me.name,source:"routine",
+                              kcal:null,items:[]};
           return {slot:me.slotLabel,recipeId:me.rec.id,name:me.name||me.rec.n,
                   side:me.side?me.side.n:null,category:me.rec.cat,
                   effort:EFF[me.rec.eff],minutes:me.rec.t,kcal:me.k,steps:me.rec.s||[],
@@ -6566,7 +7057,7 @@ function openJson(json){
    11) OLAYLAR
    ========================================================================= */
 var TAB_TTL={bugun:"Bugün",cal:"Takvim",eks:"Egzersiz",food:"Beslenme",
-  shop:"Alışveriş",todo:"Yapılacaklar",btc:"Bütçe",sag:"Sağlık",ayar:"Ayarlar"};
+  shop:"Alışveriş",todo:"Yapılacaklar",btc:"Bütçe",sag:"Sağlık",hobi:"Hobi",ayar:"Ayarlar"};
 function drawer(open){
   var d=$(".side"),sc=$("#drawerScrim"),b=$("#btnDrawer");
   if(!d) return;
@@ -6583,6 +7074,7 @@ function show(v){
   if(v==="todo"){ renderTodos(); renderRems(); }
   if(v==="btc")  renderBtc();
   if(v==="sag")  renderSag();
+  if(v==="hobi"){ renderHobi(); hbRefresh(false); }
   if(v==="ayar"){ renderAyar(); fillProfile(); }
   if(v==="food") renderFood();
   if(v==="shop") renderShop();
@@ -6872,6 +7364,7 @@ $("#extraList").addEventListener("click",function(e){
 
 /* Ayarlar */
 function renderAyar(){
+  try{ renderRt(); }catch(e){}
   $$("#langChips .chip").forEach(function(b){ b.classList.toggle("on",b.dataset.l===lang()); });
   $$("#themeChips .chip").forEach(function(b){ b.classList.toggle("on",b.dataset.t===(S.theme||"auto")); });
   fillSyncForm();
@@ -7092,6 +7585,218 @@ $("#v-sag").addEventListener("click",function(e){
     var it=(p.items||[]).filter(function(x){return x.id===b[1];})[0]; if(!it) return;
     it.last=ymd(new Date());
     save(); renderSag(); renderBugun(); toast(T("Kaydedildi ✓"));
+    return;
+  }
+});
+
+/* ================== RUTİNLER: arayüz ================== */
+var rtEdit=null;
+function renderRt(){
+  RT();
+  $("#rtList").innerHTML=S.routines.length?S.routines.map(function(r){
+    return '<div class="pirow" data-rt="'+r.id+'">'+
+      '<span class="pn">'+(r.off?"⏸ ":"⚡ ")+esc(r.name)+
+        '<small>'+esc(rtTrigText(r))+' → '+esc(rtSummary(r))+'</small></span>'+
+      '<button class="ico" data-rtoff="'+r.id+'" title="'+T("Aç / kapat")+'">'+(r.off?"▶":"⏸")+'</button>'+
+      '<button class="ico" data-rtedit="'+r.id+'" title="'+T("Düzenle")+'">✎</button></div>';
+  }).join(""):'<div class="empty" style="padding:14px">'+
+    T("Rutin yok. Örnek: takvimde maç olduğunda akşam menüsünü pizza yap ve malzemeleri alışverişe ekle.")+'</div>';
+}
+function fillRtForm(){
+  var t=$("#rt_trig").value;
+  $("#rt_evWrap").style.display=(t==="ev")?"block":"none";
+  $("#rt_textWrap").style.display=(t==="ev")?"block":"none";
+  $("#rt_dayWrap").style.display=(t==="weekday")?"block":"none";
+  var p=[];
+  if($("#rt_shop").value.trim()) p.push(T("alışveriş"));
+  if($("#rt_mealSlot").value&&$("#rt_mealText").value.trim()) p.push(T("menü"));
+  if($("#rt_todo").value.trim()) p.push(T("yapılacak"));
+  if($("#rt_remind").value.trim()) p.push(T("hatırlatıcı"));
+  $("#rt_info").innerHTML=p.length
+    ? T("Tetiklendiğinde:")+" <b>"+p.join(" + ")+"</b> · "+T("önümüzdeki 7 gün taranır, her gün bir kez uygulanır")
+    : T("En az bir eylem seç: alışveriş, menü, yapılacak ya da hatırlatıcı.");
+}
+function openRt(id){
+  RT();
+  var r=S.routines.filter(function(x){return x.id===id;})[0];
+  rtEdit=r?r.id:null;
+  $("#rtTitle").textContent=T(r?"Rutini Düzenle":"Rutin Ekle");
+  $("#rt_evType").innerHTML='<option value="any">'+T("herhangi bir aktivite")+'</option>'+
+    '<option value="work">💼 '+T("Çalışma")+'</option><option value="sport">🏃 '+T("Spor")+'</option>'+
+    utList().map(function(t){ return '<option value="u:'+t.id+'">◆ '+esc(t.l)+'</option>'; }).join("");
+  $("#rt_day").innerHTML=DAYS.map(function(d,i){ return '<option value="'+i+'">'+d+'</option>'; }).join("");
+  $("#rt_name").value=r?r.name:"";
+  $("#rt_trig").value=r?(r.trig||"ev"):"ev";
+  $("#rt_evType").value=r?(r.evType||"any"):"any";
+  $("#rt_day").value=String(r?(+r.day||0):0);
+  $("#rt_text").value=r?(r.text||""):"";
+  $("#rt_shop").value=r?((r.shop||[]).join(", ")):"";
+  $("#rt_mealSlot").value=r?(r.mealSlot||""):"";
+  $("#rt_mealText").value=r?(r.mealText||""):"";
+  $("#rt_todo").value=r?(r.todo||""):"";
+  $("#rt_remind").value=r?(r.remind||""):"";
+  $("#rt_lead").value=r?(+r.lead||0):0;
+  $("#rtDel").style.display=r?"block":"none";
+  fillRtForm();
+  $("#ovRt").classList.add("on");
+  setTimeout(function(){ if(!$("#rt_name").value) $("#rt_name").focus(); },60);
+}
+["rt_trig","rt_shop","rt_mealSlot","rt_mealText","rt_todo","rt_remind"].forEach(function(id){
+  $("#"+id).addEventListener("input",fillRtForm);
+  $("#"+id).addEventListener("change",fillRtForm);
+});
+$("#rtAdd").addEventListener("click",function(){ openRt(null); });
+$("#rtCancel").addEventListener("click",function(){ $("#ovRt").classList.remove("on"); });
+$("#ovRt").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#rtSave").addEventListener("click",function(){
+  var nm=$("#rt_name").value.trim(); if(!nm) return toast(T("Ad yaz"));
+  var shop=$("#rt_shop").value.split(",").map(function(x){return x.trim();}).filter(Boolean);
+  var ms=$("#rt_mealSlot").value,mt=$("#rt_mealText").value.trim();
+  if(!shop.length&&!(ms&&mt)&&!$("#rt_todo").value.trim()&&!$("#rt_remind").value.trim())
+    return toast(T("En az bir eylem seç"));
+  RT();
+  var r=S.routines.filter(function(x){return x.id===rtEdit;})[0];
+  if(!r){ r={id:uid()}; S.routines.push(r); }
+  r.name=nm; r.trig=$("#rt_trig").value; r.evType=$("#rt_evType").value;
+  r.day=+$("#rt_day").value||0; r.text=$("#rt_text").value.trim();
+  r.shop=shop; r.mealSlot=ms; r.mealText=mt;
+  r.todo=$("#rt_todo").value.trim(); r.remind=$("#rt_remind").value.trim();
+  r.lead=Math.max(0,+$("#rt_lead").value||0);
+  save(); rtRun(true); renderRt(); renderBugun(); renderFood(); renderShop(); renderCal();
+  $("#ovRt").classList.remove("on"); toast(T("Kaydedildi ✓"));
+});
+$("#rtDel").addEventListener("click",function(){
+  if(!confirm(T("Rutin silinsin mi?"))) return;
+  S.routines=RT().filter(function(x){ return x.id!==rtEdit; });
+  save(); renderRt(); $("#ovRt").classList.remove("on"); toast(T("Silindi"));
+});
+$("#rtList").addEventListener("click",function(e){
+  var d;
+  if((d=e.target.closest("[data-rtoff]"))){
+    var r=RT().filter(function(x){return x.id===d.dataset.rtoff;})[0];
+    if(r){ r.off=!r.off; save(); renderRt(); toast(r.off?T("Durduruldu"):T("Çalışıyor")); }
+    return;
+  }
+  if((d=e.target.closest("[data-rtedit]"))){ openRt(d.dataset.rtedit); return; }
+});
+
+/* ================== HOBİ: arayüz ================== */
+function hbDateLbl(e){
+  var d=dOf(e.date),n=dayDiff(midnight(),d);
+  var when=(n===0)?T("bugün"):(n===1?T("yarın"):(n<0?(Math.abs(n)+" "+T("gün geçti")):(n+" "+T("gün sonra"))));
+  return d.getDate()+" "+AYLAR[d.getMonth()]+" "+DAYS_S[wdOf(d)]+" · "+e.time+"  ("+when+")";
+}
+function renderHobi(){
+  var h=HB();
+  $("#hbWhen").textContent=h.lastFetch
+    ? T("son güncelleme")+": "+new Date(h.lastFetch).toLocaleString(lang())
+    : T("henüz güncellenmedi");
+  $("#hb_tsdb").value=h.keys.tsdb||"";
+  $("#hb_tm").value=h.keys.tm||"";
+
+  var up=hbUpcoming();
+  $("#hbUpcoming").innerHTML=up.length?up.map(function(e){
+    return '<div class="pirow" data-hbev="'+esc(e.id)+'">'+
+      '<span class="pn">'+(e.kind==="concert"?"🎸 ":"⚽ ")+esc(e.title)+
+        '<small>'+esc(hbDateLbl(e))+(e.venue?" · "+esc(e.venue):"")+(e.sub?" · "+esc(e.sub):"")+'</small></span>'+
+      (e.url?'<a class="ico" href="'+esc(e.url)+'" target="_blank" rel="noopener" title="'+T("Kaynak")+'">↗</a>':'')+
+      '<button class="btn '+(e.pinned?"":"gh")+' sm" data-hbpin="'+esc(e.id)+'">'+
+        (e.pinned?"📌 "+T("takvimde"):T("takvime ekle"))+'</button></div>';
+  }).join(""):'<div class="empty" style="padding:16px">'+
+    T("Henüz etkinlik yok. Takım ya da sanatçı ekleyip güncelle.")+'</div>';
+
+  var errs=Object.keys(h.err||{});
+  $("#hbErr").innerHTML=errs.length?'<div class="hint medwarn" style="margin-top:12px">'+
+    errs.map(function(k){ return esc(h.err[k]); }).join("<br>")+'</div>':"";
+
+  $("#hbTeams").innerHTML=h.teams.length?h.teams.map(function(t){
+    return '<div class="pirow"><span class="pn">⚽ '+esc(t.name)+
+      '<small>'+esc(t.league||"")+'</small></span>'+
+      '<button class="btn '+(t.auto?"":"gh")+' sm" data-hbauto="'+t.id+'">'+
+        (t.auto?"✓ "+T("otomatik"):T("otomatik ekle"))+'</button>'+
+      '<button class="ico" data-hbdel="'+t.id+'" title="'+T("Sil")+'">✕</button></div>';
+  }).join(""):'<div class="hint" style="margin:0">'+T("Takım eklenmedi.")+'</div>';
+
+  $("#hbArtists").innerHTML=h.artists.length?h.artists.map(function(a){
+    return '<div class="pirow"><span class="pn">🎸 '+esc(a.name)+
+      '<small>'+(a.country?esc(a.country):T("tüm ülkeler"))+'</small></span>'+
+      '<button class="btn '+(a.auto?"":"gh")+' sm" data-hbauto="'+a.id+'">'+
+        (a.auto?"✓ "+T("otomatik"):T("otomatik ekle"))+'</button>'+
+      '<button class="ico" data-hbdel="'+a.id+'" title="'+T("Sil")+'">✕</button></div>';
+  }).join(""):'<div class="hint" style="margin:0">'+T("Sanatçı eklenmedi.")+'</div>';
+}
+function hbRefresh(force){
+  $("#hbWhen").textContent=T("güncelleniyor…");
+  return hbFetch(force).then(function(c){
+    renderHobi(); renderCal(); renderBugun();
+    if(force) toast(c?(c+" "+T("etkinlik güncellendi")):T("Yeni etkinlik yok"));
+  }).catch(function(e){
+    renderHobi(); toast(T("Güncellenemedi: ")+e.message);
+  });
+}
+$("#hbRefresh").addEventListener("click",function(){ hbRefresh(true); });
+$("#hbSaveKeys").addEventListener("click",function(){
+  HB().keys.tsdb=$("#hb_tsdb").value.trim()||"3";
+  HB().keys.tm=$("#hb_tm").value.trim();
+  save(); toast(T("Kaydedildi ✓")); hbRefresh(true);
+});
+$("#hbTeamFind").addEventListener("click",function(){
+  var q=$("#hbTeamQ").value.trim(); if(!q) return;
+  $("#hbTeamRes").innerHTML='<div class="hint">'+T("aranıyor…")+'</div>';
+  hbFindTeam(q).then(function(list){
+    $("#hbTeamRes").innerHTML=list.length?list.slice(0,6).map(function(t){
+      return '<div class="pirow"><span class="pn">'+esc(t.strTeam)+
+        '<small>'+esc([t.strLeague,t.strCountry].filter(Boolean).join(" · "))+'</small></span>'+
+        '<button class="btn pri sm" data-hbteamadd="'+esc(t.idTeam)+'|'+esc(t.strTeam)+'|'+
+          esc(t.strLeague||"")+'">+ '+T("ekle")+'</button></div>';
+    }).join(""):'<div class="hint">'+T("Sonuç yok.")+'</div>';
+  }).catch(function(e){
+    $("#hbTeamRes").innerHTML='<div class="hint medwarn">'+T("Arama başarısız: ")+esc(e.message)+'</div>';
+  });
+});
+$("#hbTeamQ").addEventListener("keydown",function(e){ if(e.key==="Enter") $("#hbTeamFind").click(); });
+$("#hbArtAdd").addEventListener("click",function(){
+  var q=$("#hbArtQ").value.trim(); if(!q) return toast(T("Ad yaz"));
+  HB().artists.push({id:uid(),name:q,country:$("#hbArtC").value,auto:false});
+  $("#hbArtQ").value=""; save(); renderHobi(); hbRefresh(true);
+});
+$("#hbArtQ").addEventListener("keydown",function(e){ if(e.key==="Enter") $("#hbArtAdd").click(); });
+$("#v-hobi").addEventListener("click",function(e){
+  var d;
+  if((d=e.target.closest("[data-hbteamadd]"))){
+    var a=d.dataset.hbteamadd.split("|");
+    if(!HB().teams.some(function(t){ return t.tid===a[0]; })){
+      HB().teams.push({id:uid(),tid:a[0],name:a[1],league:a[2],auto:false});
+      save(); $("#hbTeamRes").innerHTML=""; $("#hbTeamQ").value="";
+      renderHobi(); hbRefresh(true);
+    }
+    return;
+  }
+  if((d=e.target.closest("[data-hbauto]"))){
+    var id=d.dataset.hbauto,h=HB();
+    var o=h.teams.concat(h.artists).filter(function(x){ return x.id===id; })[0];
+    if(o){ o.auto=!o.auto;
+      if(o.auto) hbSyncAuto();
+      else h.events.forEach(function(ev){ if(ev.owner===id&&ev.pinned) hbUnpin(ev); });
+      save(); renderHobi(); renderCal(); renderBugun();
+      toast(o.auto?T("Takvime otomatik eklenecek"):T("Otomatik ekleme kapatıldı"));
+    }
+    return;
+  }
+  if((d=e.target.closest("[data-hbdel]"))){
+    var hid=d.dataset.hbdel,hh=HB();
+    hh.events.filter(function(ev){ return ev.owner===hid&&ev.pinned; }).forEach(hbUnpin);
+    hh.events=hh.events.filter(function(ev){ return ev.owner!==hid; });
+    hh.teams=hh.teams.filter(function(x){ return x.id!==hid; });
+    hh.artists=hh.artists.filter(function(x){ return x.id!==hid; });
+    save(); renderHobi(); renderCal(); toast(T("Silindi"));
+    return;
+  }
+  if((d=e.target.closest("[data-hbpin]"))){
+    var ev=HB().events.filter(function(x){ return x.id===d.dataset.hbpin; })[0]; if(!ev) return;
+    if(ev.pinned){ hbUnpin(ev); toast(T("Takvimden kaldırıldı")); }
+    else { hbPin(ev); toast(T("Takvime eklendi ✓")); }
+    save(); renderHobi(); renderCal(); renderBugun();
     return;
   }
 });
@@ -7404,7 +8109,7 @@ $("#planList").addEventListener("click",function(e){
     var c=op.dataset.open.split("|"),di=+c[0],slot=c[1];
     var meals=buildDay(S.plan.days[di]).meals;
     var me=meals.filter(function(x){ return x.slot===slot; })[0];
-    if(me) openRecipe(me.rec.id,me.items,DAYS[di]+" · "+me.slotLabel+(me.side?" + "+me.side.n:""));
+    if(me&&!me.free) openRecipe(me.rec.id,me.items,DAYS[di]+" · "+me.slotLabel+(me.side?" + "+me.side.n:""));
   }
 });
 $("#recList").addEventListener("click",function(e){
@@ -7649,6 +8354,7 @@ try{ localStorage.removeItem("yasam_wx_v1"); localStorage.removeItem("yasam_wx_v
 var BOOT_STAMP=S.updatedAt||0;
 purgeTodos();
 migrateEvents();
+try{ rtRun(true); }catch(e){}
 scanI18n();
 applyLang();
 fillSyncForm();
@@ -7664,6 +8370,7 @@ S.updatedAt=BOOT_STAMP;
 persist();
 if(syncReady()) setTimeout(function(){ syncNow(true); },400);
 else syncBooted=true;
+setTimeout(function(){ try{ hbFetch(false).then(function(c){ if(c){ renderCal(); renderBugun(); } }).catch(function(){}); }catch(e){} },2500);
 </script>
 </body>
 </html>
