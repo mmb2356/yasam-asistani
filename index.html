@@ -307,6 +307,10 @@ nav.tabs button.on:hover{background:var(--gOn);color:var(--gOnTx);filter:brightn
 .instttl{display:none;font-size:12px;font-weight:750;color:var(--gTx);
   text-transform:uppercase;letter-spacing:.4px;margin:0 0 9px}
 #b_instBox.on .instttl{display:block}
+.pwfield{display:flex;gap:7px;align-items:center}
+.pwfield input{flex:1;min-width:0}
+.pwfield .eye{flex:0 0 auto;min-width:38px;min-height:38px;font-size:14px;opacity:.75}
+.pwfield .eye:hover{opacity:1}
 .instinfo{margin:-4px 0 12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;font-size:12.5px;line-height:1.55;color:var(--tx2)}
 .instinfo b{color:var(--tx);font-weight:700}
 .mdots{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto}
@@ -1124,9 +1128,15 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
           <label class="fld" style="margin-top:12px"><span>Depo (kullanıcı/depo)</span>
             <input id="sy_repo" placeholder="mertbayram/yasam-verim" autocomplete="off" /></label>
           <label class="fld"><span>Erişim anahtarı (token)</span>
-            <input id="sy_token" type="password" placeholder="github_pat_…" autocomplete="off" /></label>
+            <div class="pwfield">
+              <input id="sy_token" type="password" placeholder="github_pat_…" autocomplete="off" />
+              <button class="ico eye" type="button" data-eye="sy_token" title="Göster / gizle">👁</button>
+            </div></label>
           <label class="fld"><span>Şifreleme parolası</span>
-            <input id="sy_pass" type="password" placeholder="tüm cihazlarda aynı olmalı" autocomplete="off" /></label>
+            <div class="pwfield">
+              <input id="sy_pass" type="password" placeholder="tüm cihazlarda aynı olmalı" autocomplete="off" />
+              <button class="ico eye" type="button" data-eye="sy_pass" title="Göster / gizle">👁</button>
+            </div></label>
           <div style="display:grid;gap:9px">
             <button class="btn pri" id="btnSyncSave">Bağlan & Test Et</button>
             <button class="btn" id="btnSyncNow">⟳ Şimdi Senkronize Et</button>
@@ -3751,7 +3761,7 @@ var PX_H=ROW_H/STEP;              /* saat başına piksel */
 /* =========================================================================
    3) STATE
    ========================================================================= */
-var APP_VERSION="2026-08-01.2";
+var APP_VERSION="2026-08-01.3";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
@@ -6711,6 +6721,14 @@ $("#btnSyncSave").addEventListener("click",function(){
   }).catch(function(e){
     SY.lastErr=e.message; saveSync(); setSync("err",e.message); toast(T("Bağlanamadı: ")+e.message);
   });
+});
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-eye]"); if(!b) return;
+  var el=$("#"+b.dataset.eye); if(!el) return;
+  var hid=(el.type==="password");
+  el.type=hid?"text":"password";
+  b.style.opacity=hid?"1":".75";
+  b.textContent=hid?"🙈":"👁";
 });
 $("#btnSyncNow").addEventListener("click",function(){ syncNow(false); });
 $("#btnSyncPull").addEventListener("click",function(){
