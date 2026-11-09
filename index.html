@@ -311,6 +311,28 @@ nav.tabs button.on:hover{background:var(--gOn);color:var(--gOnTx);filter:brightn
 .pwfield input{flex:1;min-width:0}
 .pwfield .eye{flex:0 0 auto;min-width:38px;min-height:38px;font-size:14px;opacity:.75}
 .pwfield .eye:hover{opacity:1}
+/* ---------- Sağlık ---------- */
+.medwarn{margin:14px 0 0;padding:10px 12px;border-radius:10px;
+  background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.32);color:var(--tx2)}
+.medwarn b{color:var(--warn)}
+.hcard{border:1px solid var(--line2);border-radius:14px;padding:13px;margin-bottom:11px;
+  background:rgba(127,127,127,.05)}
+.hcard:last-child{margin-bottom:0}
+.hhd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.hhd .nm{font-weight:700;font-size:15px}
+.hhd .meta{font-size:12px;color:var(--tx3)}
+.hhd .sp{margin-left:auto;display:flex;gap:6px;align-items:center}
+.hstat{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--tx2);margin-top:8px}
+.hstat b{color:var(--tx);font-weight:700}
+.lvl{width:100%;height:78px;display:block;margin-top:8px}
+.lvlx{display:flex;justify-content:space-between;font-size:10.5px;color:var(--tx3);margin-top:2px}
+.pill.due{background:rgba(255,95,109,.16);color:#ff8f98}
+.pill.soon{background:rgba(255,176,32,.16);color:#ffd68a}
+.pill.ok{background:rgba(74,214,142,.14);color:var(--gTx)}
+.pirow{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px dashed var(--line)}
+.pirow:first-child{border-top:none}
+.pirow .pn{flex:1;min-width:0}
+.pirow .pn small{display:block;font-size:11px;color:var(--tx3)}
 .instinfo{margin:-4px 0 12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;font-size:12.5px;line-height:1.55;color:var(--tx2)}
 .instinfo b{color:var(--tx);font-weight:700}
 .mdots{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto}
@@ -810,6 +832,7 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
       <button data-v="shop">Alışveriş</button>
       <button data-v="todo">Yapılacaklar</button>
       <button data-v="btc">Bütçe</button>
+      <button data-v="sag">Sağlık</button>
       <button data-v="ayar">Ayarlar</button>
     </nav>
     <div class="sideact">
@@ -829,6 +852,7 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
       <div class="card" id="cardPlanBox"><h3>Bugünün Programı</h3><div id="todayPlan"></div></div>
       <div class="card" id="cardFoodBox"><h3>Bugünün Menüsü</h3><div id="todayFood"></div></div>
       <div class="card" id="cardRemBox" style="display:none"><h3>Hatırlatıcılar</h3><div id="todayRem"></div></div>
+      <div class="card" id="cardHlthBox" style="display:none"><h3>Sağlık</h3><div id="todayHlth"></div></div>
       <div class="card" id="cardTodoBox"><h3>Yapılacaklar</h3><div id="todayTodo"></div></div>
     </div>
     <div class="card weekcard" id="weekCard" style="margin-top:16px">
@@ -1058,6 +1082,36 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
         </div>
         <div class="card"><h3>Özet</h3><div id="btcSummary"></div></div>
       </aside>
+    </div>
+  </section>
+
+  <!-- ================= SAĞLIK ================= -->
+  <section class="view" id="v-sag">
+    <div class="sechead">
+      <h2>Sağlık</h2>
+      <div class="sp">
+        <button class="btn pri" id="sgAddMed">+ İlaç</button>
+        <button class="btn" id="sgAddAppt">+ Randevu</button>
+        <button class="btn" id="sgAddPet">+ Evcil Hayvan</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>İlaçlar</h3>
+      <div id="sgMeds"></div>
+      <p class="hint medwarn">Seviye eğrisi <b>tahminîdir</b>: nüfus ortalamalarına dayanan basit bir
+        modelle çizilir, kişiden kişiye değişir. Doz atlama, erkene alma ya da doz değiştirme kararını
+        buna bakarak verme — onu doktorun söyler.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>Randevular</h3>
+      <div id="sgAppts"></div>
+    </div>
+
+    <div class="card">
+      <h3>Evcil Hayvanlar</h3>
+      <div id="sgPets"></div>
     </div>
   </section>
 
@@ -1323,6 +1377,145 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
   </div>
 </div>
 
+<!-- ================= İLAÇ MODALI ================= -->
+<div class="ov" id="ovMed">
+  <div class="modal" style="width:min(520px,100%)">
+    <h3 id="medTitle">İlaç Ekle</h3>
+    <div class="row">
+      <label class="fld"><span>Ad</span><input id="md_name" placeholder="örn: Ozempic" /></label>
+      <label class="fld"><span>Hazır ayar</span><select id="md_preset"></select></label>
+    </div>
+    <div class="row">
+      <label class="fld"><span>Doz</span><input id="md_dose" placeholder="örn: 1" /></label>
+      <label class="fld"><span>Birim</span><input id="md_unit" placeholder="mg / ml / tablet" /></label>
+    </div>
+    <div class="row">
+      <label class="fld"><span>Sıklık</span>
+        <select id="md_every">
+          <option value="1">Her gün</option>
+          <option value="2">2 günde bir</option>
+          <option value="7">Haftada bir</option>
+          <option value="14">2 haftada bir</option>
+          <option value="28">4 haftada bir</option>
+        </select></label>
+      <label class="fld"><span>İlk doz tarihi</span><input id="md_start" type="date" /></label>
+    </div>
+    <div class="row">
+      <label class="fld"><span>Yarı ömür (saat)</span>
+        <input id="md_half" type="number" step="0.5" placeholder="168" /></label>
+      <label class="fld"><span>Tepe süresi (saat)</span>
+        <input id="md_tmax" type="number" step="0.5" placeholder="36" /></label>
+    </div>
+    <label class="fld"><span>Uygulama</span>
+      <select id="md_route">
+        <option value="inj">💉 Enjeksiyon</option>
+        <option value="oral">💊 Ağızdan</option>
+        <option value="other">Diğer</option>
+      </select></label>
+    <button class="swbtn" id="md_stockBtn" type="button" aria-pressed="false">
+      <span class="sw"><i></i></span>
+      <span class="swtx">Stok takibi<small id="md_stockHint">Kaç doz kaldı, ne zaman biter</small></span>
+    </button>
+    <div id="md_stockBox">
+      <div class="instttl">Stok</div>
+      <div class="row">
+        <label class="fld"><span>Kalan doz sayısı</span><input id="md_stock" type="number" min="0" /></label>
+        <label class="fld"><span>Kaç gün önceden uyar</span><input id="md_warn" type="number" min="0" placeholder="10" /></label>
+      </div>
+      <div class="instinfo" id="md_stockInfo" style="display:none"></div>
+    </div>
+    <label class="fld"><span>Not (doktorun söyledikleri)</span>
+      <input id="md_note" placeholder="opsiyonel — örn: doz kaçarsa ne yapılacağı" /></label>
+    <div class="mfoot">
+      <button class="btn dan sm" id="medDel" style="flex:0 0 auto;display:none">Sil</button>
+      <button class="btn gh" id="medCancel">Vazgeç</button>
+      <button class="btn pri" id="medSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= RANDEVU MODALI ================= -->
+<div class="ov" id="ovAppt">
+  <div class="modal" style="width:min(460px,100%)">
+    <h3 id="apptTitle">Randevu Ekle</h3>
+    <div class="row">
+      <label class="fld"><span>Kim / ne</span><input id="ap_who" placeholder="örn: Dr. Yılmaz · kontrol" /></label>
+      <label class="fld"><span>Tür</span>
+        <select id="ap_kind">
+          <option value="doktor">🩺 Doktor</option>
+          <option value="dis">🦷 Diş</option>
+          <option value="vet">🐾 Veteriner</option>
+          <option value="lab">🧪 Tahlil</option>
+          <option value="diger">Diğer</option>
+        </select></label>
+    </div>
+    <div class="row">
+      <label class="fld"><span>Tarih</span><input id="ap_date" type="date" /></label>
+      <label class="fld"><span>Saat</span><input id="ap_time" type="time" step="600" /></label>
+    </div>
+    <div class="row">
+      <label class="fld"><span>Yer</span><input id="ap_place" placeholder="opsiyonel" /></label>
+      <label class="fld"><span>Kaç gün önce hatırlat</span><input id="ap_lead" type="number" min="0" placeholder="3" /></label>
+    </div>
+    <label class="fld"><span>Not</span><input id="ap_note" placeholder="opsiyonel" /></label>
+    <div class="mfoot">
+      <button class="btn dan sm" id="apptDel" style="flex:0 0 auto;display:none">Sil</button>
+      <button class="btn gh" id="apptCancel">Vazgeç</button>
+      <button class="btn pri" id="apptSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EVCİL HAYVAN MODALI ================= -->
+<div class="ov" id="ovPet">
+  <div class="modal" style="width:min(460px,100%)">
+    <h3 id="petTitle">Evcil Hayvan Ekle</h3>
+    <div class="row">
+      <label class="fld"><span>Ad</span><input id="pt_name" placeholder="örn: Pamuk" /></label>
+      <label class="fld"><span>Tür</span>
+        <select id="pt_kind">
+          <option value="kedi">🐱 Kedi</option>
+          <option value="kopek">🐶 Köpek</option>
+          <option value="diger">Diğer</option>
+        </select></label>
+    </div>
+    <label class="fld"><span>Doğum tarihi (opsiyonel)</span><input id="pt_birth" type="date" /></label>
+    <div class="mfoot">
+      <button class="btn dan sm" id="petDel" style="flex:0 0 auto;display:none">Sil</button>
+      <button class="btn gh" id="petCancel">Vazgeç</button>
+      <button class="btn pri" id="petSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= AŞI / PARAZİT MODALI ================= -->
+<div class="ov" id="ovPi">
+  <div class="modal" style="width:min(480px,100%)">
+    <h3 id="piTitle">Kayıt Ekle</h3>
+    <div class="row">
+      <label class="fld"><span>Tür</span>
+        <select id="pi_type">
+          <option value="asi">💉 Aşı</option>
+          <option value="ic">🪱 İç parazit</option>
+          <option value="dis">🐜 Dış parazit</option>
+          <option value="diger">Diğer</option>
+        </select></label>
+      <label class="fld"><span>Hazır ayar</span><select id="pi_preset"></select></label>
+    </div>
+    <label class="fld"><span>Ad / ürün</span><input id="pi_name" placeholder="örn: Kuduz · Rabisin" /></label>
+    <div class="row">
+      <label class="fld"><span>Son uygulama</span><input id="pi_last" type="date" /></label>
+      <label class="fld"><span>Tekrar (ay)</span><input id="pi_every" type="number" min="0" step="0.5" placeholder="12" /></label>
+    </div>
+    <label class="fld"><span>Not</span><input id="pi_note" placeholder="opsiyonel" /></label>
+    <div class="mfoot">
+      <button class="btn dan sm" id="piDel" style="flex:0 0 auto;display:none">Sil</button>
+      <button class="btn gh" id="piCancel">Vazgeç</button>
+      <button class="btn pri" id="piSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= JSON YEDEK MODALI ================= -->
 <div class="ov" id="ovJson">
   <div class="modal" style="width:min(680px,100%)">
@@ -1365,6 +1558,75 @@ nav.tabs button,.ico,.pick,.dyn,.wsum .w,input,select,textarea,.dayfix,.swbtn,#b
    ========================================================================= */
 var LANGS={tr:"Türkçe",en:"English",de:"Deutsch"};
 var DICT={en:{
+"İlaçlar":"Medications",
+"Randevular":"Appointments",
+"Evcil Hayvanlar":"Pets",
+"İlaç Ekle":"Add medication",
+"İlacı Düzenle":"Edit medication",
+"Randevu Ekle":"Add appointment",
+"Randevuyu Düzenle":"Edit appointment",
+"Evcil Hayvan Ekle":"Add pet",
+"Evcil Hayvanı Düzenle":"Edit pet",
+"Kayıt Ekle":"Add record",
+"Kaydı Düzenle":"Edit record",
+"Yaptım ✓":"Done ✓",
+"Yaptım":"Done",
+"Yapıldı ✓":"Done ✓",
+"doz zamanı":"dose due",
+"saat sonra":"hours left",
+"günlük kaldı":"days left",
+"stok":"stock",
+"doz":"dose",
+"biter":"runs out",
+"her":"every",
+"günde":"days",
+"ay":"months",
+"son":"last",
+"sıradaki":"next",
+"sıradaki bölge":"next site",
+"doz aralığı":"dose interval",
+"şimdi":"now",
+"saat":"h",
+"kayıt":"record",
+"kayıt yok":"no record",
+"tarih yok":"no date",
+"Aşı / parazit kaydı yok.":"No vaccine or parasite records yet.",
+"Randevu yok.":"No appointments.",
+"İlaç eklenmedi. Düzenli kullandığın bir ilaç varsa ekle: ne zaman sıra geldiğini ve tahmini seviyesini gösterir.":"No medications yet. Add one you take regularly: you'll see when the next dose is due and its estimated level.",
+"Evcil hayvan eklenmedi. Aşı ve parazit tarihlerini buradan takip edebilirsin.":"No pets yet. Track vaccine and parasite dates here.",
+"Stok takibi":"Stock tracking",
+"Kaç doz kaldı, ne zaman biter":"How many doses left, when it runs out",
+"Kalan doz sayısını gir, ne zaman biteceğini hesaplayayım.":"Enter the doses left and I'll work out when it runs out.",
+"yaklaşık":"about",
+"yeter":"worth",
+"Bu ilaç kaydı silinsin mi?":"Delete this medication?",
+"Randevu silinsin mi?":"Delete appointment?",
+"Bu hayvan ve tüm kayıtları silinsin mi?":"Delete this pet and all its records?",
+"Kayıt silinsin mi?":"Delete record?",
+"Randevu ekle":"Add appointment",
+"ilaç":"medication",
+"evcil hayvan":"pet",
+"randevu":"appointment",
+"elle gir":"manual",
+"aylık":"months old",
+"yaşında":"years old",
+"sol karın":"left abdomen",
+"sağ karın":"right abdomen",
+"sol uyluk":"left thigh",
+"sağ uyluk":"right thigh",
+"sol kol":"left arm",
+"sağ kol":"right arm",
+"Kuduz":"Rabies",
+"Karma (iç karma)":"Combination vaccine",
+"Lösemi (FeLV)":"Leukemia (FeLV)",
+"Bronşin / Kennel":"Kennel cough",
+"İç parazit hapı":"Deworming tablet",
+"İç parazit (yavru)":"Deworming (puppy/kitten)",
+"Dış parazit damla":"Spot-on treatment",
+"Dış parazit tasma":"Flea/tick collar",
+"Dış parazit hapı":"Flea/tick tablet",
+"Genel kontrol":"Check-up",
+
 "Tutarı aylara böl":"Split the amount into months",
 "Toplam tutarı aylara bölüyor":"Total is split across months",
 "Taksit planı":"Installment plan",
@@ -2329,6 +2591,75 @@ var DICT={en:{
 "🥩 Kırmızı Et & Köfte":"🥩 Red Meat & Meatballs"
 },
 de:{
+"İlaçlar":"Medikamente",
+"Randevular":"Termine",
+"Evcil Hayvanlar":"Haustiere",
+"İlaç Ekle":"Medikament hinzufügen",
+"İlacı Düzenle":"Medikament bearbeiten",
+"Randevu Ekle":"Termin hinzufügen",
+"Randevuyu Düzenle":"Termin bearbeiten",
+"Evcil Hayvan Ekle":"Haustier hinzufügen",
+"Evcil Hayvanı Düzenle":"Haustier bearbeiten",
+"Kayıt Ekle":"Eintrag hinzufügen",
+"Kaydı Düzenle":"Eintrag bearbeiten",
+"Yaptım ✓":"Erledigt ✓",
+"Yaptım":"Erledigt",
+"Yapıldı ✓":"Erledigt ✓",
+"doz zamanı":"Dosis fällig",
+"saat sonra":"Stunden",
+"günlük kaldı":"Tage übrig",
+"stok":"Vorrat",
+"doz":"Dosis",
+"biter":"endet",
+"her":"alle",
+"günde":"Tage",
+"ay":"Monate",
+"son":"zuletzt",
+"sıradaki":"nächste",
+"sıradaki bölge":"nächste Stelle",
+"doz aralığı":"Dosisintervall",
+"şimdi":"jetzt",
+"saat":"Std",
+"kayıt":"Eintrag",
+"kayıt yok":"kein Eintrag",
+"tarih yok":"kein Datum",
+"Aşı / parazit kaydı yok.":"Noch keine Impf- oder Parasiteneinträge.",
+"Randevu yok.":"Keine Termine.",
+"İlaç eklenmedi. Düzenli kullandığın bir ilaç varsa ekle: ne zaman sıra geldiğini ve tahmini seviyesini gösterir.":"Noch keine Medikamente. Füge eins hinzu, das du regelmäßig nimmst: Du siehst die nächste Dosis und den geschätzten Spiegel.",
+"Evcil hayvan eklenmedi. Aşı ve parazit tarihlerini buradan takip edebilirsin.":"Noch keine Haustiere. Impf- und Parasitentermine hier verfolgen.",
+"Stok takibi":"Vorratsverfolgung",
+"Kaç doz kaldı, ne zaman biter":"Wie viele Dosen übrig, wann leer",
+"Kalan doz sayısını gir, ne zaman biteceğini hesaplayayım.":"Gib die restlichen Dosen ein, ich berechne das Ende.",
+"yaklaşık":"etwa",
+"yeter":"reicht",
+"Bu ilaç kaydı silinsin mi?":"Dieses Medikament löschen?",
+"Randevu silinsin mi?":"Termin löschen?",
+"Bu hayvan ve tüm kayıtları silinsin mi?":"Haustier samt Einträgen löschen?",
+"Kayıt silinsin mi?":"Eintrag löschen?",
+"Randevu ekle":"Termin hinzufügen",
+"ilaç":"Medikament",
+"evcil hayvan":"Haustier",
+"randevu":"Termin",
+"elle gir":"manuell",
+"aylık":"Monate alt",
+"yaşında":"Jahre alt",
+"sol karın":"linker Bauch",
+"sağ karın":"rechter Bauch",
+"sol uyluk":"linker Oberschenkel",
+"sağ uyluk":"rechter Oberschenkel",
+"sol kol":"linker Arm",
+"sağ kol":"rechter Arm",
+"Kuduz":"Tollwut",
+"Karma (iç karma)":"Kombinationsimpfung",
+"Lösemi (FeLV)":"Leukose (FeLV)",
+"Bronşin / Kennel":"Zwingerhusten",
+"İç parazit hapı":"Wurmkur Tablette",
+"İç parazit (yavru)":"Wurmkur (Jungtier)",
+"Dış parazit damla":"Spot-on",
+"Dış parazit tasma":"Floh-/Zeckenhalsband",
+"Dış parazit hapı":"Floh-/Zeckentablette",
+"Genel kontrol":"Kontrolle",
+
 "Tutarı aylara böl":"Betrag auf Monate verteilen",
 "Toplam tutarı aylara bölüyor":"Gesamtbetrag wird auf Monate verteilt",
 "Taksit planı":"Ratenplan",
@@ -3761,11 +4092,11 @@ var PX_H=ROW_H/STEP;              /* saat başına piksel */
 /* =========================================================================
    3) STATE
    ========================================================================= */
-var APP_VERSION="2026-08-01.3";
+var APP_VERSION="2026-08-02.1";
 var KEY="yasam_asistani_v2";
 function defaults(){
   return {profile:{gender:"erkek",age:30,height:184,weight:82,bf:18,act:1.55,goal:"lose"},
-          events:[],plan:null,bought:{},scale:true,theme:"auto",lang:"tr",calView:"week",evTypes:[],workouts:[],templates:null,todos:[],cats:[],budget:{items:[]},fav:{},stats:{},reminders:[],extraShop:[],updatedAt:0};
+          events:[],plan:null,bought:{},scale:true,theme:"auto",lang:"tr",calView:"week",evTypes:[],workouts:[],templates:null,todos:[],cats:[],budget:{items:[]},fav:{},stats:{},reminders:[],extraShop:[],health:{meds:[],pets:[],appts:[]},updatedAt:0};
 }
 var S=load();
 function load(){
@@ -4400,7 +4731,7 @@ var SYNC_KEY="yasam_sync_v1";
 var SY=(function(){ try{ return JSON.parse(localStorage.getItem(SYNC_KEY))||{}; }catch(e){ return {}; } })();
 function saveSync(){ try{ localStorage.setItem(SYNC_KEY,JSON.stringify(SY)); }catch(e){} }
 function syncReady(){ return !!(SY.owner&&SY.repo&&SY.token); }
-var SYNC_FIELDS=["profile","events","plan","bought","scale","theme","workouts","templates","todos","cats","budget","fav","stats","reminders","extraShop","lang","evTypes"];
+var SYNC_FIELDS=["profile","events","plan","bought","scale","theme","workouts","templates","todos","cats","budget","fav","stats","reminders","extraShop","lang","evTypes","health"];
 
 /* --- yardımcılar --- */
 function b64(buf){
@@ -4905,6 +5236,16 @@ function renderBugun(){
       '<button class="ico tick" data-remdone="'+r.id+'" title="Tamam">✓</button></div>';
   }).join("");
 
+  /* --- sağlık --- */
+  var hd=healthDue();
+  $("#cardHlthBox").style.display=hd.length?"block":"none";
+  if(hd.length) $("#todayHlth").innerHTML=hd.slice(0,6).map(function(x){
+    return '<div class="tline"><span class="tm">'+(x.k==="med"?"💉":x.k==="stock"?"📦":x.k==="appt"?"🩺":"🐾")+'</span>'+
+      '<span class="tx"'+(x.hot?' style="color:var(--warn)"':'')+'>'+esc(x.t)+'<small>'+esc(x.s)+'</small></span>'+
+      (x.k==="med"?'<button class="ico tick" data-medtake2="'+x.id+'" title="'+T("Yaptım")+'">✓</button>':'')+
+      '</div>';
+  }).join("");
+
   /* --- yapılacaklar --- */
   purgeTodos();
   var open=[];
@@ -5002,6 +5343,21 @@ function remEvents(){
       out.push({id:"rem-"+r.id+"~"+i,day:i,type:"rem",start:"09:00",end:"09:20",
                 title:r.name,note:remLabel(r)});
     });
+    (function(dd,ix){                                  /* sağlık randevuları */
+      HL().appts.forEach(function(a){
+        if(a.date!==ymd(dd)) return;
+        var st=a.time||"09:00";
+        out.push({id:"rem-appt-"+a.id+"~"+ix,day:ix,type:"rem",start:st,
+                  end:m2t(t2m(st)+30),title:(APPT_ICO[a.kind]||"")+" "+a.who,
+                  note:a.place||T("randevu")});
+      });
+      HL().meds.forEach(function(m){                   /* doz günleri */
+        var nx=midnight(new Date(medNext(m)));
+        if(ymd(nx)!==ymd(dd)) return;
+        out.push({id:"rem-med-"+m.id+"~"+ix,day:ix,type:"rem",start:"08:00",end:"08:20",
+                  title:(m.route==="oral"?"💊 ":"💉 ")+m.name,note:T("doz zamanı")});
+      });
+    })(d,i);
   }
   return out;
 }
@@ -5024,6 +5380,261 @@ function renderRems(){
       '<button class="star'+(r.imp?" on":"")+'" data-rimp="'+r.id+'" title="'+T("önemli")+'">★</button>'+
       '<button class="ico" data-remdel="'+r.id+'" title="'+T("Sil")+'">✕</button></div>';
   }).join(""):'<div class="empty" style="padding:16px">Hatırlatıcı yok. Kira, ikamet kartı, sigorta gibi tekrar eden şeyleri buraya ekle.</div>';
+}
+
+/* =========================================================================
+   5g2) SAĞLIK — ilaç, stok, randevu, evcil hayvan
+   ========================================================================= */
+function HL(){
+  if(!S.health) S.health={};
+  if(!S.health.meds) S.health.meds=[];
+  if(!S.health.pets) S.health.pets=[];
+  if(!S.health.appts) S.health.appts=[];
+  return S.health;
+}
+/* Hazır ilaç ayarları — yarı ömür ve tepe süresi yaklaşık değerlerdir, elle değiştirilebilir */
+var MED_PRESETS=[
+  {k:"",   l:"— elle gir —"},
+  {k:"sema", l:"Semaglutid (Ozempic / Wegovy)", half:168, tmax:36,  every:7,  unit:"mg"},
+  {k:"tirz", l:"Tirzepatid (Mounjaro)",         half:120, tmax:36,  every:7,  unit:"mg"},
+  {k:"dula", l:"Dulaglutid (Trulicity)",        half:112, tmax:36,  every:7,  unit:"mg"},
+  {k:"lira", l:"Liraglutid (Victoza / Saxenda)",half:13,  tmax:10,  every:1,  unit:"mg"},
+  {k:"b12",  l:"B12 enjeksiyonu",               half:720, tmax:12,  every:28, unit:"µg"},
+  {k:"d3",   l:"D vitamini (haftalık)",         half:360, tmax:24,  every:7,  unit:"IU"},
+  {k:"gun",  l:"Günlük tablet",                 half:12,  tmax:2,   every:1,  unit:"tablet"}
+];
+var PI_PRESETS={
+  asi:[["Kuduz",12],["Karma (iç karma)",12],["Lösemi (FeLV)",12],["Bronşin / Kennel",12]],
+  ic: [["İç parazit hapı",3],["İç parazit (yavru)",1]],
+  dis:[["Dış parazit damla",1],["Dış parazit tasma",6],["Dış parazit hapı",3]],
+  diger:[["Genel kontrol",6]]
+};
+/* --- doz zamanlaması --- */
+function medDoses(m){            /* geçmiş dozların zamanları (ms) — kayıt varsa onlar, yoksa plandan */
+  var out=(m.log||[]).map(function(x){ return new Date(x.at).getTime(); }).filter(function(t){ return !isNaN(t); });
+  if(!out.length&&m.start){       /* kayıt yoksa plan izlenmiş sayılır; bugünkü doz "yapıldı" sayılmaz */
+    var st=dOf(m.start).getTime(),ev=(+m.every||7)*86400000,lim=midnight().getTime();
+    for(var t=st;t<lim;t+=ev) out.push(t);
+  }
+  return out.sort(function(a,b){ return a-b; });
+}
+function medLast(m){ var d=medDoses(m); return d.length?d[d.length-1]:null; }
+function medNext(m){
+  var ev=(+m.every||7)*86400000;
+  if((m.log||[]).length) return medLast(m)+ev;
+  if(!m.start) return Date.now();
+  var st=dOf(m.start),dd=dayDiff(st,new Date()),e=Math.max(1,+m.every||7);
+  if(dd<=0) return st.getTime();                 /* ileri tarihli ya da bugün başlıyor */
+  var k=(dd%e===0)?(dd/e):Math.ceil(dd/e);       /* plandaki ilk gelecek/bugünkü doz */
+  return st.getTime()+k*ev;
+}
+function medDueIn(m){ return Math.round((medNext(m)-Date.now())/3600000); }   /* saat */
+/* --- tek bölmeli model: emilim + eliminasyon --- */
+function kaFromTmax(ke,tmax){
+  if(!tmax||tmax<=0) return ke*20;
+  var lo=ke*1.0001,hi=ke*5000;
+  for(var i=0;i<60;i++){
+    var mid=(lo+hi)/2,tm=Math.log(mid/ke)/(mid-ke);
+    if(tm>tmax) lo=mid; else hi=mid;
+  }
+  return (lo+hi)/2;
+}
+function medLevel(m,atMs,doses){
+  var half=+m.half||168,tmax=+m.tmax||Math.max(1,half/5);
+  var ke=Math.LN2/half,ka=kaFromTmax(ke,tmax),c=0;
+  (doses||medDoses(m)).forEach(function(t){
+    var h=(atMs-t)/3600000; if(h<0) return;
+    c+=(ka/(ka-ke))*(Math.exp(-ke*h)-Math.exp(-ka*h));
+  });
+  return c;
+}
+/* kararlı durumdaki tepe değeri = %100 kabul edilir */
+function medPeak(m){
+  var half=+m.half||168,ev=(+m.every||7)*24,ke=Math.LN2/half;
+  var tmax=+m.tmax||Math.max(1,half/5),ka=kaFromTmax(ke,tmax);
+  var acc=0,best=0;
+  for(var k=0;k<60;k++) acc+=0;              /* sanal: 60 doz sonrası tek tepe tarama */
+  for(var h=0;h<=ev;h+=Math.max(0.25,ev/120)){
+    var c=0;
+    for(var i=0;i<80;i++){
+      var t=h+i*ev;
+      c+=(ka/(ka-ke))*(Math.exp(-ke*t)-Math.exp(-ka*t));
+    }
+    if(c>best) best=c;
+  }
+  return best||1;
+}
+function medPct(m,atMs){ return Math.round(medLevel(m,atMs)/medPeak(m)*100); }
+/* --- stok --- */
+function medStockDays(m){
+  if(!m.stock&&m.stock!==0) return null;
+  var left=+m.stock||0;
+  if(left<=0) return 0;
+  return Math.round(left*(+m.every||7));
+}
+function medStockEnd(m){
+  var d=medStockDays(m); if(d===null) return null;
+  var base=medNext(m);
+  return new Date(base+(d-(+m.every||7))*86400000);
+}
+/* --- evcil hayvan --- */
+function piNext(it){
+  if(!it.last||!(+it.every)) return null;
+  var d=dOf(it.last); d.setMonth(d.getMonth()+Math.round(+it.every));
+  if((+it.every)%1){ d.setDate(d.getDate()+15); }
+  return midnight(d);
+}
+function piDays(it){ var d=piNext(it); return d?dayDiff(midnight(),d):null; }
+/* --- randevu --- */
+function apptDays(a){ return dayDiff(midnight(),dOf(a.date)); }
+function apptDue(a){ return !a.done&&apptDays(a)<=(+a.lead||3); }
+function apptsSorted(){
+  return HL().appts.slice().sort(function(x,y){ return apptDays(x)-apptDays(y); });
+}
+/* --- bugün için toplu uyarı listesi --- */
+function healthDue(){
+  var out=[];
+  HL().meds.forEach(function(m){
+    var h=medDueIn(m);
+    if(h<=24) out.push({k:"med",id:m.id,t:m.name,s:(h<=0?T("doz zamanı"):(h+" "+T("saat sonra"))),hot:h<=0});
+    var sd=medStockDays(m);
+    if(sd!==null&&sd<=(+m.warn||10)) out.push({k:"stock",id:m.id,t:m.name+" · "+T("stok"),
+      s:(sd<=0?T("bitti"):(sd+" "+T("günlük kaldı"))),hot:sd<=0});
+  });
+  HL().appts.forEach(function(a){
+    if(apptDue(a)) out.push({k:"appt",id:a.id,t:a.who,s:apptWhen(a),hot:apptDays(a)<=0});
+  });
+  HL().pets.forEach(function(p){
+    (p.items||[]).forEach(function(it){
+      var d=piDays(it);
+      if(d!==null&&d<=7) out.push({k:"pet",id:p.id,t:p.name+" · "+it.name,
+        s:(d<0?(Math.abs(d)+" "+T("gün geçti")):(d===0?T("bugün"):(d+" "+T("gün sonra")))),hot:d<=0});
+    });
+  });
+  return out;
+}
+function apptWhen(a){
+  var d=apptDays(a),tm=a.time?(" · "+a.time):"";
+  if(d<0) return Math.abs(d)+" "+T("gün geçti")+tm;
+  if(d===0) return T("bugün")+tm;
+  if(d===1) return T("yarın")+tm;
+  return d+" "+T("gün sonra")+tm;
+}
+
+/* ---------- Sağlık görünümü ---------- */
+function lvlSvg(m){
+  var now=Date.now(),ev=(+m.every||7)*86400000;
+  var from=now-2*ev,to=now+ev,W=600,H=78,pk=medPeak(m),doses=medDoses(m);
+  var pts=[],steps=90;
+  for(var i=0;i<=steps;i++){
+    var t=from+(to-from)*i/steps;
+    var fut=doses.slice();
+    for(var k=1;k<=3;k++){ var nd=medNext(m)+(k-1)*ev; if(nd<=t) fut.push(nd); }
+    var v=medLevel(m,t,fut)/pk;
+    pts.push([i/steps*W,H-4-Math.max(0,Math.min(1.15,v))*(H-12)]);
+  }
+  var d=pts.map(function(p,i){ return (i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1); }).join(" ");
+  var nx=(now-from)/(to-from)*W;
+  var marks=doses.filter(function(t){ return t>=from&&t<=to; }).map(function(t){
+    var x=(t-from)/(to-from)*W;
+    return '<line x1="'+x.toFixed(1)+'" y1="'+(H-4)+'" x2="'+x.toFixed(1)+'" y2="'+(H-14)+
+           '" stroke="var(--acc2)" stroke-width="2"/>';
+  }).join("");
+  return '<svg class="lvl" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    '<path d="'+d+' L '+W+' '+H+' L 0 '+H+' Z" fill="rgba(0,211,167,.14)"/>'+
+    '<path d="'+d+'" fill="none" stroke="var(--acc2)" stroke-width="2.5" stroke-linejoin="round"/>'+
+    marks+
+    '<line x1="'+nx.toFixed(1)+'" y1="0" x2="'+nx.toFixed(1)+'" y2="'+H+'" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="4 3"/>'+
+    '</svg>';
+}
+function hPill(txt,cls){ return '<span class="pill '+cls+'">'+txt+'</span>'; }
+function renderSag(){
+  HL();
+  /* --- ilaçlar --- */
+  $("#sgMeds").innerHTML=HL().meds.length?HL().meds.map(function(m){
+    var h=medDueIn(m),pct=medPct(m,Date.now()),last=medLast(m);
+    var st=(h<=0)?hPill(T("şimdi"),"due"):(h<=24?hPill(Math.round(h)+" "+T("saat"),"soon")
+          :hPill(Math.round(h/24)+" "+T("gün"),"ok"));
+    var sd=medStockDays(m),end=medStockEnd(m);
+    var stock=(sd===null)?"":'<span>'+T("stok")+': <b>'+(+m.stock||0)+' '+T("doz")+'</b>'+
+      (end?(' · '+T("biter")+' '+end.getDate()+" "+AYLAR[end.getMonth()]):'')+'</span>';
+    return '<div class="hcard" data-med="'+m.id+'">'+
+      '<div class="hhd"><span class="nm">'+(m.route==="oral"?"💊 ":"💉 ")+esc(m.name)+'</span>'+
+        '<span class="meta">'+esc(m.dose||"")+' '+esc(m.unit||"")+' · '+
+          T("her")+' '+(+m.every||7)+' '+T("günde")+'</span>'+
+        '<span class="sp">'+st+
+          '<button class="btn pri sm" data-medtake="'+m.id+'">'+T("Yaptım ✓")+'</button>'+
+          '<button class="ico" data-mededit="'+m.id+'" title="'+T("Düzenle")+'">✎</button></span></div>'+
+      lvlSvg(m)+
+      '<div class="lvlx"><span>−2 '+T("doz aralığı")+'</span><span>'+T("şimdi")+' · %'+pct+'</span>'+
+        '<span>+1</span></div>'+
+      '<div class="hstat">'+
+        '<span>'+T("son")+': <b>'+(last?(new Date(last).getDate()+" "+AYLAR[new Date(last).getMonth()]):"—")+'</b></span>'+
+        '<span>'+T("sıradaki")+': <b>'+(function(d){return d.getDate()+" "+AYLAR[d.getMonth()];})(new Date(medNext(m)))+'</b></span>'+
+        (m.route==="inj"?'<span>'+T("sıradaki bölge")+': <b>'+esc(nextSite(m))+'</b></span>':'')+
+        stock+'</div>'+
+      (m.note?'<div class="hint" style="margin:8px 0 0">'+esc(m.note)+'</div>':'')+
+      '</div>';
+  }).join(""):'<div class="empty" style="padding:16px">'+
+    T("İlaç eklenmedi. Düzenli kullandığın bir ilaç varsa ekle: ne zaman sıra geldiğini ve tahmini seviyesini gösterir.")+'</div>';
+
+  /* --- randevular --- */
+  $("#sgAppts").innerHTML=apptsSorted().length?apptsSorted().map(function(a){
+    var d=apptDays(a);
+    var cls=(d<0?"due":(d<=(+a.lead||3)?"soon":"ok"));
+    return '<div class="pirow" data-appt="'+a.id+'">'+
+      '<span class="pn">'+esc(APPT_ICO[a.kind]||"")+' '+esc(a.who)+
+        '<small>'+esc(a.date)+(a.time?" · "+esc(a.time):"")+(a.place?" · "+esc(a.place):"")+
+        (a.note?" · "+esc(a.note):"")+'</small></span>'+
+      hPill(apptWhen(a),cls)+
+      '<button class="ico" data-apptedit="'+a.id+'" title="'+T("Düzenle")+'">✎</button>'+
+      '<button class="ico" data-apptdel="'+a.id+'" title="'+T("Sil")+'">✕</button></div>';
+  }).join(""):'<div class="empty" style="padding:16px">'+T("Randevu yok.")+'</div>';
+
+  /* --- evcil hayvanlar --- */
+  $("#sgPets").innerHTML=HL().pets.length?HL().pets.map(function(p){
+    var items=(p.items||[]).slice().sort(function(x,y){
+      var a=piDays(x),b=piDays(y);
+      return (a===null?9999:a)-(b===null?9999:b); });
+    return '<div class="hcard" data-pet="'+p.id+'">'+
+      '<div class="hhd"><span class="nm">'+(p.kind==="kedi"?"🐱 ":p.kind==="kopek"?"🐶 ":"🐾 ")+esc(p.name)+'</span>'+
+        (p.birth?'<span class="meta">'+petAge(p)+'</span>':'')+
+        '<span class="sp">'+
+          '<button class="btn sm" data-piadd="'+p.id+'">+ '+T("kayıt")+'</button>'+
+          '<button class="ico" data-petedit="'+p.id+'" title="'+T("Düzenle")+'">✎</button></span></div>'+
+      (items.length?items.map(function(it){
+        var d=piDays(it),nx=piNext(it);
+        var cls=(d===null?"ok":(d<0?"due":(d<=14?"soon":"ok")));
+        var txt=(d===null)?T("tarih yok"):(d<0?(Math.abs(d)+" "+T("gün geçti")):
+                 (d===0?T("bugün"):(d+" "+T("gün sonra"))));
+        return '<div class="pirow">'+
+          '<span class="pn">'+(PI_ICO[it.type]||"•")+' '+esc(it.name)+
+            '<small>'+(it.last?T("son")+": "+esc(it.last):T("kayıt yok"))+
+            (nx?" · "+T("sıradaki")+": "+ymd(nx):"")+
+            (it.every?" · "+T("her")+" "+it.every+" "+T("ay"):"")+'</small></span>'+
+          hPill(txt,cls)+
+          '<button class="btn gh sm" data-pidone="'+p.id+'|'+it.id+'">'+T("Yapıldı ✓")+'</button>'+
+          '<button class="ico" data-piedit="'+p.id+'|'+it.id+'" title="'+T("Düzenle")+'">✎</button></div>';
+      }).join(""):'<div class="hint" style="margin:6px 0 0">'+T("Aşı / parazit kaydı yok.")+'</div>')+
+      '</div>';
+  }).join(""):'<div class="empty" style="padding:16px">'+
+    T("Evcil hayvan eklenmedi. Aşı ve parazit tarihlerini buradan takip edebilirsin.")+'</div>';
+}
+var APPT_ICO={doktor:"🩺",dis:"🦷",vet:"🐾",lab:"🧪",diger:"📅"};
+var PI_ICO={asi:"💉",ic:"🪱",dis:"🐜",diger:"•"};
+var SITES=["sol karın","sağ karın","sol uyluk","sağ uyluk","sol kol","sağ kol"];
+function nextSite(m){
+  var lg=(m.log||[]);
+  if(!lg.length) return T(SITES[0]);
+  var li=SITES.indexOf(lg[lg.length-1].site);
+  return T(SITES[(li+1)%SITES.length]);
+}
+function petAge(p){
+  if(!p.birth) return "";
+  var b=dOf(p.birth),now=new Date();
+  var mo=(now.getFullYear()-b.getFullYear())*12+(now.getMonth()-b.getMonth());
+  if(mo<24) return mo+" "+T("aylık");
+  return Math.floor(mo/12)+" "+T("yaşında");
 }
 
 /* =========================================================================
@@ -5052,6 +5663,20 @@ function palSearch(q){
   (S.reminders||[]).forEach(function(r){ if(hit(r.name))
     out.push({g:T("Hatırlatıcılar"),i:"⏰",x:r.name,t:remLabel(r),
       run:function(){ palClose(); show("todo"); }}); });
+  HL().meds.forEach(function(m){ if(hit(m.name))
+    out.push({g:T("Sağlık"),i:"💉",x:m.name,t:T("ilaç"),
+      run:function(){ palClose(); show("sag"); openMed(m.id); }}); });
+  HL().appts.forEach(function(a){ if(hit(a.who)||hit(a.place||""))
+    out.push({g:T("Sağlık"),i:"🩺",x:a.who,t:apptWhen(a),
+      run:function(){ palClose(); show("sag"); openAppt(a.id); }}); });
+  HL().pets.forEach(function(p){
+    if(hit(p.name)) out.push({g:T("Sağlık"),i:"🐾",x:p.name,t:T("evcil hayvan"),
+      run:function(){ palClose(); show("sag"); }});
+    (p.items||[]).forEach(function(it){ if(hit(it.name))
+      out.push({g:T("Sağlık"),i:"💊",x:p.name+" · "+it.name,
+        t:(piDays(it)!=null?piDays(it)+" "+T("gün"):""),
+        run:function(){ palClose(); show("sag"); }}); });
+  });
   (S.workouts||[]).forEach(function(w){ if(hit(w.title))
     out.push({g:T("Antrenman"),i:"🏋",x:w.title,run:function(){ palClose(); show("eks"); openWk(w.id); }}); });
   S.events.forEach(function(e){ if(e.title&&hit(e.title))
@@ -5089,6 +5714,9 @@ function palActions(q){
        palClose(); show("cal");
        setTimeout(function(){ openModal(null,todayIdx(),9,new Date());
          var t=$("#m_title"); if(t) t.value=txt; },60); }},
+    {g:T("Ekle"),i:"🩺",x:T("Randevu ekle")+": "+txt,run:function(){
+       palClose(); show("sag");
+       setTimeout(function(){ openAppt(null); var e=$("#ap_who"); if(e) e.value=txt; },60); }},
     {g:T("Ekle"),i:"€",x:T("Gider ekle")+": "+txt,run:function(){
        palClose(); show("btc");
        setTimeout(function(){ openBtc(null,"out");
@@ -5324,6 +5952,10 @@ function dayDots(d){
     if(t.done||!t.date) return;
     if(t.date===ymd(d)){ if(t.imp) out.imp++; else out.rem++; }
   });
+  HL().appts.forEach(function(a){ if(a.date===ymd(d)) out.rem++; });
+  HL().meds.forEach(function(m){ if(ymd(midnight(new Date(medNext(m))))===ymd(d)) out.rem++; });
+  HL().pets.forEach(function(p){ (p.items||[]).forEach(function(it){
+    var nx=piNext(it); if(nx&&ymd(nx)===ymd(d)) out.rem++; }); });
   return out;
 }
 function renderMonthView(){
@@ -5821,6 +6453,31 @@ function buildExport(){
     extraShoppingItems:(S.extraShop||[]).map(function(i){
       return {item:i.name,amount:i.qty||null,purchased:!!i.done};
     }),
+    health:{
+      medications:HL().meds.map(function(m){
+        return {id:m.id,name:m.name,dose:m.dose||null,unit:m.unit||null,route:m.route,
+          every_days:+m.every||7,start:m.start||null,half_life_h:+m.half||null,tmax_h:+m.tmax||null,
+          last_dose:medLast(m)?new Date(medLast(m)).toISOString():null,
+          next_dose:new Date(medNext(m)).toISOString(),
+          estimated_level_pct:medPct(m,Date.now()),
+          doses_left:(m.stock!=null?+m.stock:null),
+          runs_out:(medStockEnd(m)?ymd(medStockEnd(m)):null),
+          note:m.note||"",
+          log:(m.log||[]).map(function(x){ return {at:x.at,site:x.site||null}; })};
+      }),
+      appointments:apptsSorted().map(function(a){
+        return {id:a.id,who:a.who,kind:a.kind,date:a.date,time:a.time||null,
+                place:a.place||"",note:a.note||"",days_left:apptDays(a),lead_days:+a.lead||3};
+      }),
+      pets:HL().pets.map(function(p){
+        return {id:p.id,name:p.name,kind:p.kind,birth:p.birth||null,
+          records:(p.items||[]).map(function(it){
+            var nx=piNext(it);
+            return {type:it.type,name:it.name,last:it.last||null,every_months:+it.every||null,
+                    next:nx?ymd(nx):null,days_left:piDays(it),note:it.note||""};
+          })};
+      })
+    },
     todoCategories:S.cats.slice(),
     todos:S.todos.map(function(t){
       return {id:t.id,title:t.title,category:t.cat||null,date:t.date||null,important:!!t.imp,done:!!t.done,
@@ -5909,7 +6566,7 @@ function openJson(json){
    11) OLAYLAR
    ========================================================================= */
 var TAB_TTL={bugun:"Bugün",cal:"Takvim",eks:"Egzersiz",food:"Beslenme",
-  shop:"Alışveriş",todo:"Yapılacaklar",btc:"Bütçe",ayar:"Ayarlar"};
+  shop:"Alışveriş",todo:"Yapılacaklar",btc:"Bütçe",sag:"Sağlık",ayar:"Ayarlar"};
 function drawer(open){
   var d=$(".side"),sc=$("#drawerScrim"),b=$("#btnDrawer");
   if(!d) return;
@@ -5925,6 +6582,7 @@ function show(v){
   if(v==="eks")  renderEks();
   if(v==="todo"){ renderTodos(); renderRems(); }
   if(v==="btc")  renderBtc();
+  if(v==="sag")  renderSag();
   if(v==="ayar"){ renderAyar(); fillProfile(); }
   if(v==="food") renderFood();
   if(v==="shop") renderShop();
@@ -6143,6 +6801,15 @@ $("#v-bugun").addEventListener("click",function(e){
     return;
   }
   if((d=e.target.closest("[data-remdone]"))){ remDismiss(d.dataset.remdone); toast(T("Tamam ✓")); return; }
+  if((d=e.target.closest("[data-medtake2]"))){
+    var mm=HL().meds.filter(function(x){return x.id===d.dataset.medtake2;})[0];
+    if(mm){ if(!mm.log) mm.log=[];
+      mm.log.push({at:new Date().toISOString(),
+        site:(mm.route==="inj")?SITES[(SITES.indexOf((mm.log[mm.log.length-1]||{}).site)+1)%SITES.length]:""});
+      if(mm.stock!=null) mm.stock=Math.max(0,(+mm.stock||0)-1);
+      save(); renderBugun(); toast(T("Kaydedildi ✓")); }
+    return;
+  }
   if((d=e.target.closest("[data-bugunrec]"))) openRecipe(d.dataset.bugunrec);
 });
 
@@ -6218,6 +6885,215 @@ $("#langChips").addEventListener("click",function(e){
 $("#themeChips").addEventListener("click",function(e){
   var b=e.target.closest(".chip"); if(!b) return;
   S.theme=b.dataset.t; save(); applyTheme(); renderAyar();
+});
+
+/* ================== SAĞLIK: modaller ve olaylar ================== */
+var medEdit=null,medStockOn=false,apptEdit=null,petEdit=null,piEdit=null,piPet=null;
+
+function openMed(id){
+  var m=HL().meds.filter(function(x){return x.id===id;})[0];
+  medEdit=m?m.id:null;
+  $("#medTitle").textContent=T(m?"İlacı Düzenle":"İlaç Ekle");
+  $("#md_preset").innerHTML=MED_PRESETS.map(function(o){
+    return '<option value="'+o.k+'">'+T(o.l)+'</option>'; }).join("");
+  $("#md_preset").value="";
+  $("#md_name").value=m?m.name:"";
+  $("#md_dose").value=m?(m.dose||""):"";
+  $("#md_unit").value=m?(m.unit||""):"";
+  $("#md_every").value=String(m?(+m.every||7):7);
+  $("#md_start").value=m?(m.start||ymd(new Date())):ymd(new Date());
+  $("#md_half").value=m?(m.half||168):168;
+  $("#md_tmax").value=m?(m.tmax||36):36;
+  $("#md_route").value=m?(m.route||"inj"):"inj";
+  medStockOn=!!(m&&(m.stock||m.stock===0));
+  $("#md_stock").value=(m&&m.stock!=null)?m.stock:"";
+  $("#md_warn").value=(m&&m.warn)?m.warn:10;
+  $("#md_note").value=m?(m.note||""):"";
+  $("#medDel").style.display=m?"block":"none";
+  syncMedForm();
+  $("#ovMed").classList.add("on");
+  setTimeout(function(){ if(!$("#md_name").value) $("#md_name").focus(); },60);
+}
+function syncMedForm(){
+  $("#md_stockBtn").setAttribute("aria-pressed",medStockOn?"true":"false");
+  $("#md_stockBox").classList.toggle("on",medStockOn);
+  $("#md_stockBox").style.display=medStockOn?"block":"none";
+  $("#md_stockInfo").style.display=medStockOn?"block":"none";
+  if(medStockOn){
+    var left=+$("#md_stock").value||0,ev=+$("#md_every").value||7;
+    $("#md_stockInfo").innerHTML=left
+      ? '<b>'+left+' '+T("doz")+'</b> · '+T("yaklaşık")+' <b>'+(left*ev)+' '+T("gün")+'</b> '+T("yeter")
+      : T("Kalan doz sayısını gir, ne zaman biteceğini hesaplayayım.");
+  }
+}
+$("#md_preset").addEventListener("change",function(){
+  var o=MED_PRESETS.filter(function(x){return x.k===this.value;}.bind(this))[0];
+  if(!o||!o.k) return;
+  if(!$("#md_name").value) $("#md_name").value=o.l.split(" (")[0];
+  $("#md_half").value=o.half; $("#md_tmax").value=o.tmax;
+  $("#md_every").value=String(o.every); $("#md_unit").value=o.unit;
+  syncMedForm();
+});
+$("#md_stockBtn").addEventListener("click",function(){ medStockOn=!medStockOn; syncMedForm(); });
+["md_stock","md_every"].forEach(function(id){
+  $("#"+id).addEventListener("input",syncMedForm);
+  $("#"+id).addEventListener("change",syncMedForm);
+});
+$("#medCancel").addEventListener("click",function(){ $("#ovMed").classList.remove("on"); });
+$("#ovMed").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#medSave").addEventListener("click",function(){
+  var nm=$("#md_name").value.trim(); if(!nm) return toast(T("Ad yaz"));
+  var m=HL().meds.filter(function(x){return x.id===medEdit;})[0];
+  if(!m){ m={id:uid(),log:[]}; HL().meds.push(m); }
+  m.name=nm; m.dose=$("#md_dose").value.trim(); m.unit=$("#md_unit").value.trim();
+  m.every=+$("#md_every").value||7; m.start=$("#md_start").value||ymd(new Date());
+  m.half=+$("#md_half").value||168; m.tmax=+$("#md_tmax").value||36;
+  m.route=$("#md_route").value; m.note=$("#md_note").value.trim();
+  if(medStockOn){ m.stock=Math.max(0,+$("#md_stock").value||0); m.warn=Math.max(0,+$("#md_warn").value||10); }
+  else { delete m.stock; delete m.warn; }
+  save(); renderSag(); renderBugun(); $("#ovMed").classList.remove("on"); toast(T("Kaydedildi ✓"));
+});
+$("#medDel").addEventListener("click",function(){
+  if(!confirm(T("Bu ilaç kaydı silinsin mi?"))) return;
+  S.health.meds=HL().meds.filter(function(x){ return x.id!==medEdit; });
+  save(); renderSag(); renderBugun(); $("#ovMed").classList.remove("on"); toast(T("Silindi"));
+});
+
+function openAppt(id){
+  var a=HL().appts.filter(function(x){return x.id===id;})[0];
+  apptEdit=a?a.id:null;
+  $("#apptTitle").textContent=T(a?"Randevuyu Düzenle":"Randevu Ekle");
+  $("#ap_who").value=a?a.who:""; $("#ap_kind").value=a?(a.kind||"doktor"):"doktor";
+  $("#ap_date").value=a?a.date:ymd(new Date());
+  $("#ap_time").value=a?(a.time||""):"";
+  $("#ap_place").value=a?(a.place||""):""; $("#ap_note").value=a?(a.note||""):"";
+  $("#ap_lead").value=a?(+a.lead||3):3;
+  $("#apptDel").style.display=a?"block":"none";
+  $("#ovAppt").classList.add("on");
+  setTimeout(function(){ if(!$("#ap_who").value) $("#ap_who").focus(); },60);
+}
+$("#apptCancel").addEventListener("click",function(){ $("#ovAppt").classList.remove("on"); });
+$("#ovAppt").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#apptSave").addEventListener("click",function(){
+  var who=$("#ap_who").value.trim(); if(!who) return toast(T("Ad yaz"));
+  if(!$("#ap_date").value) return toast(T("Tarih seç"));
+  var a=HL().appts.filter(function(x){return x.id===apptEdit;})[0];
+  if(!a){ a={id:uid()}; HL().appts.push(a); }
+  a.who=who; a.kind=$("#ap_kind").value; a.date=$("#ap_date").value;
+  a.time=$("#ap_time").value; a.place=$("#ap_place").value.trim();
+  a.note=$("#ap_note").value.trim(); a.lead=Math.max(0,+$("#ap_lead").value||3);
+  save(); renderSag(); renderBugun(); renderCal();
+  $("#ovAppt").classList.remove("on"); toast(T("Kaydedildi ✓"));
+});
+$("#apptDel").addEventListener("click",function(){
+  if(!confirm(T("Randevu silinsin mi?"))) return;
+  S.health.appts=HL().appts.filter(function(x){ return x.id!==apptEdit; });
+  save(); renderSag(); renderBugun(); renderCal(); $("#ovAppt").classList.remove("on"); toast(T("Silindi"));
+});
+
+function openPet(id){
+  var p=HL().pets.filter(function(x){return x.id===id;})[0];
+  petEdit=p?p.id:null;
+  $("#petTitle").textContent=T(p?"Evcil Hayvanı Düzenle":"Evcil Hayvan Ekle");
+  $("#pt_name").value=p?p.name:""; $("#pt_kind").value=p?(p.kind||"kedi"):"kedi";
+  $("#pt_birth").value=p?(p.birth||""):"";
+  $("#petDel").style.display=p?"block":"none";
+  $("#ovPet").classList.add("on");
+  setTimeout(function(){ if(!$("#pt_name").value) $("#pt_name").focus(); },60);
+}
+$("#petCancel").addEventListener("click",function(){ $("#ovPet").classList.remove("on"); });
+$("#ovPet").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#petSave").addEventListener("click",function(){
+  var nm=$("#pt_name").value.trim(); if(!nm) return toast(T("Ad yaz"));
+  var p=HL().pets.filter(function(x){return x.id===petEdit;})[0];
+  if(!p){ p={id:uid(),items:[]}; HL().pets.push(p); }
+  p.name=nm; p.kind=$("#pt_kind").value; p.birth=$("#pt_birth").value||"";
+  save(); renderSag(); renderBugun(); $("#ovPet").classList.remove("on"); toast(T("Kaydedildi ✓"));
+});
+$("#petDel").addEventListener("click",function(){
+  if(!confirm(T("Bu hayvan ve tüm kayıtları silinsin mi?"))) return;
+  S.health.pets=HL().pets.filter(function(x){ return x.id!==petEdit; });
+  save(); renderSag(); renderBugun(); $("#ovPet").classList.remove("on"); toast(T("Silindi"));
+});
+
+function fillPiPreset(){
+  var t=$("#pi_type").value,list=PI_PRESETS[t]||[];
+  $("#pi_preset").innerHTML='<option value="">— '+T("elle gir")+' —</option>'+
+    list.map(function(o,i){ return '<option value="'+i+'">'+T(o[0])+'</option>'; }).join("");
+  $("#pi_preset").value="";
+}
+function openPi(petId,itemId){
+  piPet=petId; var p=HL().pets.filter(function(x){return x.id===petId;})[0]; if(!p) return;
+  var it=(p.items||[]).filter(function(x){return x.id===itemId;})[0];
+  piEdit=it?it.id:null;
+  $("#piTitle").textContent=T(it?"Kaydı Düzenle":"Kayıt Ekle")+" · "+p.name;
+  $("#pi_type").value=it?(it.type||"asi"):"asi";
+  fillPiPreset();
+  $("#pi_name").value=it?it.name:"";
+  $("#pi_last").value=it?(it.last||""):ymd(new Date());
+  $("#pi_every").value=it?(it.every||""):12;
+  $("#pi_note").value=it?(it.note||""):"";
+  $("#piDel").style.display=it?"block":"none";
+  $("#ovPi").classList.add("on");
+}
+$("#pi_type").addEventListener("change",fillPiPreset);
+$("#pi_preset").addEventListener("change",function(){
+  var t=$("#pi_type").value,o=(PI_PRESETS[t]||[])[+this.value];
+  if(!o) return;
+  $("#pi_name").value=T(o[0]); $("#pi_every").value=o[1];
+});
+$("#piCancel").addEventListener("click",function(){ $("#ovPi").classList.remove("on"); });
+$("#ovPi").addEventListener("click",function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#piSave").addEventListener("click",function(){
+  var p=HL().pets.filter(function(x){return x.id===piPet;})[0]; if(!p) return;
+  var nm=$("#pi_name").value.trim(); if(!nm) return toast(T("Ad yaz"));
+  if(!p.items) p.items=[];
+  var it=p.items.filter(function(x){return x.id===piEdit;})[0];
+  if(!it){ it={id:uid()}; p.items.push(it); }
+  it.type=$("#pi_type").value; it.name=nm;
+  it.last=$("#pi_last").value||""; it.every=+$("#pi_every").value||0;
+  it.note=$("#pi_note").value.trim();
+  save(); renderSag(); renderBugun(); $("#ovPi").classList.remove("on"); toast(T("Kaydedildi ✓"));
+});
+$("#piDel").addEventListener("click",function(){
+  var p=HL().pets.filter(function(x){return x.id===piPet;})[0]; if(!p) return;
+  if(!confirm(T("Kayıt silinsin mi?"))) return;
+  p.items=(p.items||[]).filter(function(x){ return x.id!==piEdit; });
+  save(); renderSag(); renderBugun(); $("#ovPi").classList.remove("on"); toast(T("Silindi"));
+});
+
+$("#sgAddMed").addEventListener("click",function(){ openMed(null); });
+$("#sgAddAppt").addEventListener("click",function(){ openAppt(null); });
+$("#sgAddPet").addEventListener("click",function(){ openPet(null); });
+$("#v-sag").addEventListener("click",function(e){
+  var d;
+  if((d=e.target.closest("[data-medtake]"))){
+    var m=HL().meds.filter(function(x){return x.id===d.dataset.medtake;})[0]; if(!m) return;
+    if(!m.log) m.log=[];
+    m.log.push({at:new Date().toISOString(),site:(m.route==="inj")?SITES[(SITES.indexOf((m.log[m.log.length-1]||{}).site)+1)%SITES.length]:""});
+    if(m.stock!=null) m.stock=Math.max(0,(+m.stock||0)-1);
+    save(); renderSag(); renderBugun(); bumpStat("med");
+    toast(T("Kaydedildi ✓")+(m.route==="inj"?(" · "+T(nextSite(m))+" "+T("sıradaki")):""));
+    return;
+  }
+  if((d=e.target.closest("[data-mededit]"))){ openMed(d.dataset.mededit); return; }
+  if((d=e.target.closest("[data-apptedit]"))){ openAppt(d.dataset.apptedit); return; }
+  if((d=e.target.closest("[data-apptdel]"))){
+    if(!confirm(T("Randevu silinsin mi?"))) return;
+    S.health.appts=HL().appts.filter(function(x){ return x.id!==d.dataset.apptdel; });
+    save(); renderSag(); renderBugun(); renderCal(); toast(T("Silindi")); return;
+  }
+  if((d=e.target.closest("[data-petedit]"))){ openPet(d.dataset.petedit); return; }
+  if((d=e.target.closest("[data-piadd]"))){ openPi(d.dataset.piadd,null); return; }
+  if((d=e.target.closest("[data-piedit]"))){ var a=d.dataset.piedit.split("|"); openPi(a[0],a[1]); return; }
+  if((d=e.target.closest("[data-pidone]"))){
+    var b=d.dataset.pidone.split("|");
+    var p=HL().pets.filter(function(x){return x.id===b[0];})[0]; if(!p) return;
+    var it=(p.items||[]).filter(function(x){return x.id===b[1];})[0]; if(!it) return;
+    it.last=ymd(new Date());
+    save(); renderSag(); renderBugun(); toast(T("Kaydedildi ✓"));
+    return;
+  }
 });
 
 /* Bütçe */
